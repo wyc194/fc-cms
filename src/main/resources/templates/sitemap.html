@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="light" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="'站点地图 | ' + ${tenantConfig?.name ?: 'FreeCity'}">站点地图</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/normalize.css@8.0.1/normalize.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.1/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #49b1f5;
+            --text-color: #4c4948;
+            --bg-color: #f4f4f4;
+            --card-bg: #fff;
+            --border-color: #e3e8f7;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            padding: 40px 20px;
+        }
+        .minimal-container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: var(--card-bg);
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.05);
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 50px;
+            border-bottom: 2px solid var(--bg-color);
+            padding-bottom: 20px;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 2rem;
+            color: var(--primary-color);
+        }
+        .back-home {
+            display: inline-block;
+            margin-top: 10px;
+            text-decoration: none;
+            color: #999;
+            font-size: 0.9rem;
+            transition: color 0.3s;
+        }
+        .back-home:hover {
+            color: var(--primary-color);
+        }
+        .section {
+            margin-bottom: 40px;
+        }
+        .section-title {
+            font-size: 1.25rem;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            font-weight: 600;
+        }
+        .section-title i {
+            margin-right: 10px;
+            color: var(--primary-color);
+            width: 24px;
+        }
+        .link-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 15px;
+        }
+        .link-item {
+            padding: 8px 12px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .link-item a {
+            text-decoration: none;
+            color: var(--text-color);
+            transition: all 0.3s;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            margin-right: 10px;
+        }
+        .link-item a:hover {
+            color: var(--primary-color);
+            padding-left: 5px;
+        }
+        .link-item time {
+            font-size: 0.75rem;
+            color: #bbb;
+            flex-shrink: 0;
+        }
+        .tag-cloud {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .tag-item {
+            padding: 5px 15px;
+            background: var(--bg-color);
+            border-radius: 20px;
+            text-decoration: none;
+            color: var(--text-color);
+            font-size: 0.85rem;
+            transition: all 0.3s;
+        }
+        .tag-item:hover {
+            background: var(--primary-color);
+            color: white;
+        }
+        .category-list {
+            list-style: none;
+            padding: 0;
+        }
+        .category-item {
+            margin-bottom: 10px;
+        }
+        .category-item a {
+            text-decoration: none;
+            color: var(--text-color);
+            font-weight: 500;
+        }
+        .category-item ul {
+            list-style: none;
+            padding-left: 20px;
+            margin-top: 5px;
+            border-left: 2px solid var(--bg-color);
+        }
+        @media (max-width: 600px) {
+            .minimal-container {
+                padding: 20px;
+            }
+            .link-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="minimal-container">
+    <div class="header">
+        <h1 th:text="${tenantConfig?.webInfo?.title ?: '站点地图'}">站点地图</h1>
+        <a href="/" class="back-home"><i class="fas fa-chevron-left"></i> 返回首页</a>
+    </div>
+
+    <div class="section">
+        <div class="section-title"><i class="fas fa-file-alt"></i> 文章索引</div>
+        <div class="link-grid">
+            <div class="link-item" th:each="article : ${allArticles}">
+                <a th:href="@{'/article/' + ${article.id}}" th:text="${article.title}">文章标题</a>
+                <time th:text="${#temporals.format(article.createTime, 'yyyy-MM-dd')}">2024-01-01</time>
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <div class="section-title"><i class="fas fa-inbox"></i> 分类归档</div>
+        <ul class="category-list">
+            <li class="category-item" th:each="category : ${allCategories}">
+                <a th:href="@{'/category/' + ${category.id}}" th:text="${category.name}">分类名</a>
+                <ul th:if="${not #lists.isEmpty(category.children)}">
+                    <li th:each="child : ${category.children}">
+                        <a th:href="@{'/category/' + ${child.id}}" th:text="${child.name}">子分类名</a>
+                    </li>
+                </ul>
+            </li>
+        </ul>
+    </div>
+
+    <div class="section" th:if="${not #lists.isEmpty(allTags)}">
+        <div class="section-title"><i class="fas fa-tags"></i> 标签集合</div>
+        <div class="tag-cloud">
+            <a th:each="tag : ${allTags}" th:href="@{'/tag/' + ${tag.id}}" class="tag-item" th:text="${tag.name}">标签</a>
+        </div>
+    </div>
+
+    <div class="section">
+        <div class="section-title"><i class="fas fa-map-signs"></i> 快速导航</div>
+        <div class="tag-cloud">
+            <a href="/" class="tag-item">首页</a>
+            <a href="/archives.html" class="tag-item">文章归档</a>
+            <a href="/categories.html" class="tag-item">全部分类</a>
+            <a href="/tags.html" class="tag-item">全部标签</a>
+            <a href="/links.html" class="tag-item">友情链接</a>
+            <a href="/about.html" class="tag-item">关于本站</a>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

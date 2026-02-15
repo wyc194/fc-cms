@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="light" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{template::common_head('归档 | ' + ${tenantConfig?.name ?: 'FreeCity'}, '归档页面')}">
+</head>
+<body>
+<div th:replace="~{template::loading}"></div>
+<div th:replace="~{template::background}"></div>
+<div th:replace="~{template::sidebar}"></div>
+<div th:replace="~{template::search}"></div>
+
+<div class="page" id="body-wrap">
+    <header class="not-home-page" id="page-header" th:style="|background-image: url(${tenantConfig?.webInfo?.indexImg ?: '/img/index_image.jpg'})|">
+        <nav th:replace="~{template::nav}" id="nav"></nav>
+        <div id="page-site-info">
+            <h1 id="site-title">归档</h1>
+        </div>
+    </header>
+
+    <main class="layout" id="content-inner">
+        <div id="archive">
+            <div class="article-sort-title" th:text="'文章总计 - ' + ${articleCount}">文章总计 - 0</div>
+            <div class="article-sort">
+                <th:block th:each="archiveEntry : ${archiveArticles}">
+                    <div class="article-sort-item year" th:text="${archiveEntry.key}">2022</div>
+                    <div class="article-sort-item" th:each="article : ${archiveEntry.value}">
+                        <a class="article-sort-item-img" th:href="@{'/article/' + ${article.id}}" th:title="${article.title}">
+                            <img th:src="${tenantConfig?.webInfo?.loadingImg ?: '/img/loading.gif'}" th:data-lazy-src="${article.thumbnail ?: (tenantConfig?.webInfo?.notFoundImg ?: '/img/404.jpg')}"
+                                 th:data-not-found-img="${tenantConfig?.webInfo?.notFoundImg ?: '/img/404.jpg'}"
+                                 onerror="this.onerror=null;this.src=this.getAttribute('data-not-found-img')" th:alt="${article.title}">
+                        </a>
+                        <div class="article-sort-item-info">
+                            <div class="article-sort-item-time">
+                                <i class="far fa-calendar-alt"></i>
+                                <time th:datetime="${article.createTime}"
+                                      th:title="'发表于 ' + ${#temporals.format(article.createTime, 'yyyy-MM-dd HH:mm:ss')}"
+                                      th:text="${#temporals.format(article.createTime, 'yyyy-MM-dd')}">2022-08-18</time>
+                            </div>
+                            <a class="article-sort-item-title" th:href="@{'/article/' + ${article.id}}"
+                               th:title="${article.title}" th:text="${article.title}">文章标题</a>
+                        </div>
+                    </div>
+                </th:block>
+            </div>
+            <!-- 分页 -->
+            <nav id="pagination" th:if="${totalPages > 1}">
+                <div class="pagination">
+                    <a class="extend prev" rel="prev" th:if="${currentPage > 1}" 
+                       th:href="${currentYear != null} ? @{'/archives/' + ${currentYear}(page=${currentPage - 1})} : @{'/archives'(page=${currentPage - 1})}">
+                        <i class="fas fa-chevron-left fa-fw"></i>
+                    </a>
+                    <th:block th:each="pageNum : ${#numbers.sequence(1, totalPages)}">
+                        <span class="page-number current" th:if="${pageNum == currentPage}" th:text="${pageNum}">1</span>
+                        <a class="page-number" th:if="${pageNum != currentPage}" 
+                           th:href="${currentYear != null} ? @{'/archives/' + ${currentYear}(page=${pageNum})} : @{'/archives'(page=${pageNum})}" th:text="${pageNum}">2</a>
+                    </th:block>
+                    <a class="extend next" rel="next" th:if="${currentPage < totalPages}" 
+                       th:href="${currentYear != null} ? @{'/archives/' + ${currentYear}(page=${currentPage + 1})} : @{'/archives'(page=${currentPage + 1})}">
+                        <i class="fas fa-chevron-right fa-fw"></i>
+                    </a>
+                </div>
+            </nav>
+        </div>
+
+        <div class="aside-content" id="aside-content">
+            <div th:replace="~{template :: card_info}"></div>
+            <div th:replace="~{template :: card_announcement}"></div>
+            <div class="sticky_layout">
+                <div th:replace="~{template :: card_recent_post}"></div>
+                <div th:replace="~{template :: card_categories}"></div>
+                <div th:replace="~{template :: card_archives}"></div>
+            </div>
+        </div>
+    </main>
+
+    <footer th:replace="~{template::footer(null)}" id="footer"></footer>
+</div>
+
+<div th:replace="~{template::bottomscript}"></div>
+</body>
+</html>

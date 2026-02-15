@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="light" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{template::common_head(${article.title} + ' | ' + ${tenantConfig?.name ?: 'FreeCity'}, ${article.summary})}">
+</head>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
+<body>
+<div th:replace="~{template::loading}"></div>
+<div th:replace="~{template::background}"></div>
+<div th:replace="~{template::sidebar}"></div>
+<div th:replace="~{template::search}"></div>
+<div class="post" id="body-wrap">
+    <header class="post-bg" id="page-header" th:style="|background-image: url(${article.thumbnail ?: (tenantConfig?.webInfo?.notFoundImg ?: '/img/404.jpg')})|">
+        <nav th:replace="~{template::nav}" id="nav"></nav>
+        <div id="post-info">
+            <h1 class="post-title" th:text="${article.title}">文章标题</h1>
+            <div id="post-meta">
+                <div class="meta-firstline">
+                    <span class="post-meta-date">
+                        <i class="fa-fw post-meta-icon far fa-calendar-alt"></i>
+                        <span class="post-meta-label">发表于</span>
+                        <time th:datetime="${article.createTime}"
+                            th:title="'发表于 ' + ${#temporals.format(article.createTime, 'yyyy-MM-dd HH:mm:ss')}"
+                            th:text="${#temporals.format(article.createTime, 'yyyy-MM-dd')}">2022-08-18</time>
+                    </span>
+                    <span class="post-meta-categories" th:if="${article.category != null}">
+                        <span class="post-meta-separator">|</span>
+                        <i class="fas fa-inbox fa-fw post-meta-icon"></i>
+                        <a class="post-meta-categories" th:href="@{'/category/' + ${article.category.id}}"
+                            th:text="${article.category.name}">分类</a>
+                    </span>
+                </div>
+                <div class="meta-secondline">
+                    <span class="post-meta-separator">|</span>
+                    <span class="post-meta-wordcount">
+                        <i class="far fa-file-word fa-fw post-meta-icon"></i>
+                        <span class="post-meta-label">字数总计:</span>
+                        <span class="word-count" th:text="${#strings.length(article.content)}">503</span>
+                        <span class="post-meta-separator">|</span>
+                        <i class="far fa-clock fa-fw post-meta-icon"></i>
+                        <span class="post-meta-label">参考阅读时长:</span>
+                        <span th:text="${#strings.length(article.content) / 300 + 1} + '分钟'">1分钟</span>
+                    </span>
+                    <span class="post-meta-separator">|</span>
+                    <span class="post-meta-pv-cv" id="" th:data-flag-title="${article.title}">
+                        <i class="far fa-eye fa-fw post-meta-icon"></i>
+                        <span class="post-meta-label">阅读量:</span>
+                        <span id="busuanzi_value_page_pv" th:text="${article.viewCount}"></span>
+                    </span>
+                </div>
+            </div>
+        </div>
+    </header>
+    <main class="layout" id="content-inner">
+        <div id="post">
+            <article class="post-content" id="article-container" th:utext="${article.renderedContent}">
+            </article>
+            <div class="post-copyright">
+                <div class="post-copyright__author">
+                    <span class="post-copyright-meta">文章作者: </span>
+                    <span class="post-copyright-info">
+                        <a target="_blank" rel="noopener" href="/about.html" th:text="${tenantConfig?.webInfo?.authorName ?: 'FreeCity'}">FreeCity</a>
+                    </span>
+                </div>
+                <div class="post-copyright__type">
+                    <span class="post-copyright-meta">文章链接: </span>
+                    <span class="post-copyright-info">
+                        <a th:href="@{'/article/' + ${article.id}}" id="post-url"></a>
+                    </span>
+                </div>
+                <div class="post-copyright__notice">
+                    <span class="post-copyright-meta">版权声明: </span>
+                    <span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a
+                            href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA
+                            4.0</a> 许可协议。转载请注明来自 <a href="/" target="_blank" th:text="${tenantConfig?.name ?: 'FreeCity'}">FreeCity</a> 的博客！</span>
+                </div>
+            </div>
+            <div class="tag_share">
+                <div class="post-meta__tag-list" th:if="${not #lists.isEmpty(article.tags)}">
+                    <i class="fas fa-tags fa-fw post-meta-icon"></i>
+                    <a class="post-meta__tags" th:each="tag : ${article.tags}" th:href="@{'/tag/' + ${tag.id}}"
+                        th:text="${tag.name}">标签</a>
+                </div>
+                <div class="post_share">
+                    <div class="social-share" th:data-image="${article.thumbnail ?: (tenantConfig?.webInfo?.notFoundImg ?: '/img/404.jpg')}" data-sites="weibo,qq,qzone,wechat">
+                    </div>
+                </div>
+            </div>
+            <div class="post-reward" th:if="${tenantConfig?.webInfo?.wxRewardImg != null or tenantConfig?.webInfo?.aliRewardImg != null}">
+                <div class="reward-button button--animated">
+                    <i class="fas fa-qrcode"></i>打赏
+                </div>
+                <div class="reward-main">
+                    <ul class="reward-all">
+                        <li class="reward-item" th:if="${tenantConfig?.webInfo?.wxRewardImg != null}">
+                            <a th:href="${tenantConfig.webInfo.wxRewardImg}" target="_blank">
+                                <img class="post-qr-code-img" th:src="${tenantConfig?.webInfo?.loadingImg ?: '/img/loading.gif'}" 
+                                     th:data-lazy-src="${tenantConfig.webInfo.wxRewardImg}"
+                                     alt="微信">
+                            </a>
+                            <div class="post-qr-code-desc">
+                                微信
+                            </div>
+                        </li>
+                        <li class="reward-item" th:if="${tenantConfig?.webInfo?.aliRewardImg != null}">
+                            <a th:href="${tenantConfig.webInfo.aliRewardImg}" target="_blank">
+                                <img class="post-qr-code-img" th:src="${tenantConfig?.webInfo?.loadingImg ?: '/img/loading.gif'}" 
+                                     th:data-lazy-src="${tenantConfig.webInfo.aliRewardImg}"
+                                     alt="支付宝">
+                            </a>
+                            <div class="post-qr-code-desc">
+                                支付宝
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            <nav class="pagination-post" id="pagination">
+                <div class="prev-post pull-left" th:if="${prevArticle != null}" th:classappend="${nextArticle == null} ? 'pull-full' : ''">
+                    <a th:href="@{'/article/' + ${prevArticle.id}}">
+                        <img class="prev-cover" th:src="${tenantConfig?.webInfo?.loadingImg ?: '/img/loading.gif'}"
+                             th:data-lazy-src="${prevArticle.thumbnail ?: (tenantConfig?.webInfo?.notFoundImg ?: '/img/404.jpg')}"
+                             th:data-not-found-img="${tenantConfig?.webInfo?.notFoundImg ?: '/img/404.jpg'}"
+                             onerror="this.onerror=null;this.src=this.getAttribute('data-not-found-img')" alt="cover of previous post">
+                        <div class="pagination-info">
+                            <div class="label">上一篇</div>
+                            <div class="prev_info" th:text="${prevArticle.title}">上一篇标题</div>
+                        </div>
+                    </a>
+                </div>
+                <div class="next-post pull-right" th:if="${nextArticle != null}" th:classappend="${prevArticle == null} ? 'pull-full' : ''">
+                    <a th:href="@{'/article/' + ${nextArticle.id}}">
+                        <img class="next-cover" th:src="${tenantConfig?.webInfo?.loadingImg ?: '/img/loading.gif'}"
+                             th:data-lazy-src="${nextArticle.thumbnail ?: (tenantConfig?.webInfo?.notFoundImg ?: '/img/404.jpg')}"
+                             th:data-not-found-img="${tenantConfig?.webInfo?.notFoundImg ?: '/img/404.jpg'}"
+                             onerror="this.onerror=null;this.src=this.getAttribute('data-not-found-img')" alt="cover of next post">
+                        <div class="pagination-info">
+                            <div class="label">下一篇</div>
+                            <div class="next_info" th:text="${nextArticle.title}">下一篇标题</div>
+                        </div>
+                    </a>
+                </div>
+            </nav>
+            <div class="relatedPosts" th:if="${not #lists.isEmpty(relatedArticles)}">
+                <div class="headline">
+                    <i class="fas fa-thumbs-up fa-fw"></i>
+                    <span>相关推荐</span>
+                </div>
+                <div class="relatedPosts-list">
+                    <div th:each="related : ${relatedArticles}">
+                        <a th:href="@{'/article/' + ${related.id}}" th:title="${related.title}">
+                            <img class="cover" th:src="${tenantConfig?.webInfo?.loadingImg ?: '/img/loading.gif'}"
+                                 th:data-lazy-src="${related.thumbnail ?: (tenantConfig?.webInfo?.notFoundImg ?: '/img/404.jpg')}"
+                                 th:data-not-found-img="${tenantConfig?.webInfo?.notFoundImg ?: '/img/404.jpg'}"
+                                 onerror="this.onerror=null;this.src=this.getAttribute('data-not-found-img')" alt="cover">
+                            <div class="content is-center">
+                                <div class="date">
+                                    <i class="far fa-calendar-alt fa-fw"></i>
+                                    <span th:text="${#temporals.format(related.createTime, 'yyyy-MM-dd')}">2024-01-01</span>
+                                </div>
+                                <div class="title" th:text="${related.title}">
+                                    相关文章标题
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <hr>
+            <div id="post-comment">
+                <div class="comment-head">
+                    <div class="comment-headline">
+                        <i class="fas fa-comments fa-fw"></i>
+                        <span>评论</span>
+                    </div>
+                </div>
+                <div class="comment-wrap">
+                    <!-- 评论表单 -->
+                    <div class="comment-form" id="comment-form">
+                        <div class="comment-form-row nickname-email-row">
+                            <input type="text" id="comment-nickname" placeholder="昵称 *" required>
+                            <input type="email" id="comment-email" placeholder="邮箱 *" required>
+                        </div>
+                        <div class="comment-form-row">
+                            <textarea id="comment-content" placeholder="欢迎交流讨论... *" rows="4" required></textarea>
+                        </div>
+                        <div class="comment-form-row verification-row">
+                            <input type="text" id="comment-verification-code" placeholder="验证码 *" required>
+                            <button type="button" id="send-code-btn" class="btn btn-secondary">获取验证码</button>
+                        </div>
+                        <div class="comment-form-row">
+                            <button type="button" id="submit-comment" class="btn">提交评论</button>
+                        </div>
+                        <input type="hidden" id="comment-article-id" th:value="${article.id}">
+                        <input type="hidden" id="comment-parent-id" value="">
+                    </div>
+
+                    <hr>
+
+                    <!-- 评论列表 (由 JS 异步加载) -->
+                    <div class="comment-list" id="comment-list">
+                        <div class="comment-loading text-center">
+                            <i class="fas fa-spinner fa-spin"></i> 正在加载评论...
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="aside-content" id="aside-content">
+            <div th:replace="~{template :: card_info}"></div>
+            <div th:replace="~{template :: card_announcement}"></div>
+            <div class="sticky_layout">
+                <div th:replace="~{template :: card_toc}"></div>
+                <div th:replace="~{template :: card_recent_post}"></div>
+            </div>
+        </div>
+    </main>
+    <!--  footer  -->
+    <footer th:replace="~{template::footer(${article.thumbnail ?: '/img/404.jpg'})}" id="footer"></footer>
+</div>
+<!-- 主体底部引入script -->
+<div th:replace="~{template::bottomscript}"></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+</body>
+</html>

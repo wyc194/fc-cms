@@ -1,0 +1,167 @@
+/* ==========================================================================
+   工具详情页公用样式 (Tool Detail Common Styles)
+   ========================================================================== */
+
+/* 页面主体容器 */
+.tool-detail-container {
+    width: 100%;
+    animation: fadeIn 0.5s ease-out;
+}
+
+/* 工作区布局 (Workspace Layout) */
+.tool-workspace {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+/* 双栏模式 (Side-by-Side) */
+.workspace-split {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+/* 编辑器容器 (Editor Card) */
+.editor-container {
+    display: flex;
+    flex-direction: column;
+    border: 1px solid rgba(var(--text-highlight-color-rgb), 0.12);
+    border-radius: 12px;
+    background: var(--card-bg);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    overflow: hidden;
+}
+
+.editor-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 16px;
+    background: rgba(var(--text-highlight-color-rgb), 0.03);
+    border-bottom: 1px solid rgba(var(--text-highlight-color-rgb), 0.08);
+}
+
+.editor-title {
+    font-size: 0.85rem;
+    font-weight: 700;
+    opacity: 0.8;
+}
+
+.editor-actions {
+    display: flex;
+    gap: 10px;
+}
+
+/* 操作面板 (Control Bar) */
+.tool-controls {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    padding: 15px;
+    background: rgba(var(--text-highlight-color-rgb), 0.02);
+    border: 1px solid rgba(var(--text-highlight-color-rgb), 0.08);
+    border-radius: 12px;
+}
+
+/* 输入框/输出框样式 */
+.tool-textarea {
+    width: 100%;
+    min-height: 450px;
+    padding: 15px;
+    border: none;
+    outline: none;
+    background: transparent;
+    color: var(--font-color);
+    font-family: 'Fira Code', 'Consolas', 'Monaco', 'Courier New', monospace;
+    font-size: 0.9rem;
+    line-height: 1.6;
+    resize: vertical;
+}
+
+/* 按钮样式增强 */
+.btn-tool {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 18px;
+    border: 1px solid rgba(var(--text-highlight-color-rgb), 0.15);
+    border-radius: 8px;
+    background: var(--card-bg);
+    color: var(--font-color);
+    font-size: 0.88rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.btn-tool:hover {
+    border-color: var(--text-highlight-color);
+    background: rgba(var(--text-highlight-color-rgb), 0.05);
+    color: var(--text-highlight-color);
+    transform: translateY(-2px);
+}
+
+.btn-tool.primary {
+    background: var(--text-highlight-color);
+    border-color: var(--text-highlight-color);
+    color: #fff;
+}
+
+.btn-tool.primary:hover {
+    box-shadow: 0 5px 15px rgba(var(--text-highlight-color-rgb), 0.3);
+    opacity: 0.9;
+}
+
+.btn-icon-only {
+    padding: 6px;
+    border-radius: 6px;
+    opacity: 0.6;
+}
+
+.btn-icon-only:hover {
+    opacity: 1;
+    background: rgba(var(--text-highlight-color-rgb), 0.1);
+}
+
+/* 信息提示区 */
+.tool-info-section {
+    margin-top: 1rem;
+    padding: 1rem;
+    background: var(--card-bg);
+    border-radius: 16px;
+    border: 1px solid rgba(var(--text-highlight-color-rgb), 0.08);
+}
+
+.tool-info-section h2 {
+    font-size: 1.3rem;
+    margin: 0;
+    color: var(--text-highlight-color);
+}
+
+.tool-info-content {
+    opacity: 0.8;
+    line-height: 1.6;
+    font-size: 0.95rem;
+}
+
+.tool-info-content p {
+    margin: 8px 0;
+}
+
+.tool-info-content ul {
+    margin: 6px 0;
+}
+
+/* 响应式适配 */
+@media screen and (max-width: 900px) {
+    .workspace-split {
+        grid-template-columns: 1fr;
+    }
+    
+    .tool-textarea {
+        min-height: 300px;
+    }
+}

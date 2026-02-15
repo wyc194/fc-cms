@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>出错了 - FreeCity CMS</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7f6; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .error-container { background: white; padding: 2rem; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); text-align: center; max-width: 500px; width: 90%; }
+        h1 { color: #e74c3c; margin-top: 0; }
+        p { color: #666; line-height: 1.6; }
+        .btn { display: inline-block; margin-top: 1.5rem; padding: 0.8rem 1.5rem; background-color: #3498db; color: white; text-decoration: none; border-radius: 4px; transition: background 0.3s; }
+        .btn:hover { background-color: #2980b9; }
+        .details { margin-top: 1rem; font-size: 0.8rem; color: #999; }
+    </style>
+</head>
+<body>
+    <div class="error-container">
+        <h1 th:text="${status == 404} ? '404 - 页面未找到' : '哎呀，出错了'">哎呀，出错了</h1>
+        <p th:text="${message}">系统繁忙，请稍后再试</p>
+        <a href="/" class="btn">返回首页</a>
+        <div class="details" th:if="${url}">
+            URL: <span th:text="${url}">/</span>
+        </div>
+    </div>
+</body>
+</html>

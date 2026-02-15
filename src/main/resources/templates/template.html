@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="light" xmlns:th="http://www.thymeleaf.org">
+<!-- common head -->
+<head th:fragment="common_head(title, description)">
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title th:text="${tenantConfig?.webInfo?.title ?: title}">归园田居</title>
+    <meta name="author" th:content="${tenantConfig?.webInfo?.authorName ?: 'wyc'}">
+    <meta name="copyright" th:content="${tenantConfig?.webInfo?.authorName ?: 'wyc'}">
+    <meta name="format-detection" content="telephone=no">
+    <meta name="theme-color" content="#ffffff">
+    <meta name="description" th:content="${tenantConfig?.webInfo?.description ?: description}">
+    <meta name="keywords" th:content="${tenantConfig?.webInfo?.keywords}">
+    <link rel="shortcut icon" th:href="${tenantConfig?.webInfo?.favicon ?: '/img/favicon.ico'}">
+    <style th:if="${tenantConfig?.customCode?.css}" th:text="${tenantConfig.customCode.css}"></style>
+    <script th:if="${tenantConfig?.customCode?.js}" th:text="${tenantConfig.customCode.js}"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/normalize.css@8.0.1/normalize.min.css">
+    <link rel="stylesheet" th:href="@{/css/base.css}">
+    <link rel="stylesheet" th:href="@{/css/layout.css}">
+    <link rel="stylesheet" th:href="@{/css/components.css}">
+    <link rel="stylesheet" th:href="@{/css/animations.css}">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.1/css/all.min.css">
+    <noscript>
+        <style type="text/css">
+            #nav { opacity: 1 }
+            .justified-gallery img { opacity: 1 }
+            #recent-posts time, #post-meta time { display: inline !important }
+        </style>
+    </noscript>
+    <script th:src="@{/js/config.js}"></script>
+    <script th:src="@{/js/utils.js}"></script>
+    <script th:src="@{/js/search.js}"></script>
+    <script th:inline="javascript">
+        window.GLOBAL_CONFIG = window.GLOBAL_CONFIG || {};
+        // 使用 Thymeleaf Natural Template 语法以消除编辑器语法错误提示
+        window.GLOBAL_CONFIG.themeSetting = /*[[${tenantConfig?.webInfo?.theme ?: 'auto'}]]*/ 'auto';
+        window.GLOBAL_CONFIG.loadingImg = /*[[${tenantConfig?.webInfo?.loadingImg ?: '/img/loading.gif'}]]*/ '/img/loading.gif';
+    </script>
+    <script th:src="@{/js/init.js}"></script>
+</head>
+
+<!-- loading box -->
+<div th:fragment="loading" id="loading-box">
+    <div class="spinner-box">
+        <div class="solar-system">
+            <div class="earth-orbit orbit">
+                <div class="planet earth"></div>
+                <div class="venus-orbit orbit">
+                    <div class="planet venus"></div>
+                    <div class="mercury-orbit orbit">
+                        <div class="planet mercury"></div>
+                        <div class="sun"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- web background -->
+<div th:fragment="background" id="web_bg"></div>
+<!-- search modal 搜索弹窗 -->
+<div th:fragment="search" id="local-search">
+    <div class="search-dialog">
+        <div class="search-nav">
+            <span class="search-dialog-title">搜索</span>
+            <span class="search-close-button"><i class="fas fa-times"></i></span>
+        </div>
+        <div class="is-center" id="local-search-input">
+            <div class="local-search-box">
+                <input class="local-search-box--input" placeholder="搜索文章标题或摘要..." type="text"/>
+            </div>
+        </div>
+        <hr/>
+        <div id="local-search-results">
+            <div class="search-result-stats">请在上方输入关键词进行搜索</div>
+            <div class="search-result-list"></div>
+        </div>
+    </div>
+    <div id="search-mask"></div>
+</div>
+<!-- menu sidebar 小屏设备菜单右侧弹窗页面 -->
+<div th:fragment="sidebar" id="sidebar">
+    <div id="menu-mask"></div>
+    <div id="sidebar-menus">
+        <div class="author-avatar">
+            <img class="avatar-img"
+                th:src="${tenantConfig?.webInfo?.loadingImg ?: '/img/loading.gif'}"
+                th:data-lazy-src="${tenantConfig?.webInfo?.logo ?: '/img/avatar.png'}"
+                th:data-not-found-img="${tenantConfig?.webInfo?.notFoundImg ?: '/img/404.jpg'}"
+                onerror="this.onerror=null;this.src=this.getAttribute('data-not-found-img')"
+                th:alt="${tenantConfig?.webInfo?.authorName ?: 'wyc'}"
+            />
+        </div>
+        <div class="site-data">
+            <div class="data-item is-center">
+                <div class="data-item-link">
+                    <a href="/archives.html">
+                        <div class="headline">文章</div>
+                        <div class="length-num" th:text="${articleCount}">0</div>
+                    </a>
+                </div>
+            </div>
+            <div class="data-item is-center">
+                <div class="data-item-link">
+                    <a href="/tags.html">
+                        <div class="headline">标签</div>
+                        <div class="length-num" th:text="${tagCount}">0</div>
+                    </a>
+                </div>
+            </div>
+            <div class="data-item is-center">
+                <div class="data-item-link">
+                    <a href="/categories.html">
+                        <div class="headline">分类</div>
+                        <div class="length-num" th:text="${categoryCount}">0</div>
+                    </a>
+                </div>
+            </div>
+        </div>
+        <hr>
+        <div class="menus_items">
+            <div class="menus_item">
+                <a class="site-page" href="javascript:void(0);">
+                    <i class="fa-fw fas fa-book"></i>
+                    <span> 文章</span>
+                    <i class="fas fa-chevron-down expand"></i>
+                </a>
+                <ul class="menus_item_child">
+                    <li>
+                        <a class="site-page child" href="/archives.html">
+                            <i class="fa-fw fas fa-archive"></i>
+                            <span> 归档</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a class="site-page child" href="/categories.html">
+                            <i class="fa-fw fas fa-folder-open"></i>
+                            <span> 分类</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a class="site-page child" href="/tags.html">
+                            <i class="fa-fw fas fa-tags"></i>
+                            <span> 标签</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+            <div class="menus_item">
+                <a class="site-page" target="_blank" rel="noopener" href="/tools.html">
+                    <i class="fa-fw fas fa-hammer"></i>
+                    <span> 在线工具</span>
+                </a>
+            </div>
+            <div class="menus_item">
+                <a class="site-page" href="javascript:void(0);">
+                    <i class="fa-fw fas fa-bars"></i>
+                    <span> 其他</span>
+                    <i class="fas fa-chevron-down expand"></i>
+                </a>
+                <ul class="menus_item_child">
+                    <li>
+                        <a class="site-page child" href="/links.html">
+                            <i class="fa-fw fas fa-link"></i>
+                            <span> 网站推荐</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a class="site-page child" target="_blank" rel="noopener" href="/sitemap.html">
+                            <i class="fa-fw fas fa-sitemap"></i>
+                            <span> 站点地图</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+            <div class="menus_item">
+                <a class="site-page" href="/about.html">
+                    <i class="fa-fw fas fa-user"></i>
+                    <span> 关于我</span>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- header.nav -->
+<nav th:fragment="nav" id="nav">
+    <span id="blog_name">
+        <a id="site-name" href="/" th:text="${tenantConfig?.name ?: '归园田居'}">归园田居</a>
+    </span>
+    <div id="menus">
+        <div id="search-button">
+            <a class="site-page social-icon search">
+                <i class="fas fa-search fa-fw"></i>
+                <span> 搜索</span>
+            </a>
+        </div>
+        <div class="menus_items">
+            <div class="menus_item">
+                <a class="site-page"
+                   href="javascript:void(0);">
+                    <i class="fa-fw fas fa-book"></i>
+                    <span> 文章</span>
+                    <i class="fas fa-chevron-down expand"></i>
+                </a>
+                <ul class="menus_item_child">
+                    <li>
+                        <a class="site-page child"
+                           href="/archives.html">
+                            <i class="fa-fw fas fa-archive"></i>
+                            <span> 归档</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a class="site-page child"
+                           href="/categories.html">
+                            <i class="fa-fw fas fa-folder-open"></i>
+                            <span> 分类</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a class="site-page child"
+                           href="/tags.html">
+                            <i class="fa-fw fas fa-tags"></i>
+                            <span> 标签</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+            <div class="menus_item">
+                <a class="site-page" target="_blank" rel="noopener" href="/tools.html">
+                    <i class="fa-fw fas fa-hammer"></i>
+                    <span> 在线工具</span>
+                </a>
+            </div>
+            <div class="menus_item">
+                <a class="site-page" href="javascript:void(0);">
+                    <i class="fa-fw fas fa-bars"></i>
+                    <span> 其他</span>
+                    <i class="fas fa-chevron-down expand"></i>
+                </a>
+                <ul class="menus_item_child">
+                    <li>
+                        <a class="site-page child" href="/links.html">
+                            <i class="fa-fw fas fa-link"></i>
+                            <span> 网站推荐</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a class="site-page child" target="_blank" rel="noopener" href="/sitemap.html">
+                            <i class="fa-fw fas fa-sitemap"></i>
+                            <span> 站点地图</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+            <div class="menus_item">
+                <a class="site-page" href="/about.html">
+                    <i class="fa-fw fas fa-user"></i>
+                    <span> 关于我</span>
+                </a>
+            </div>
+        </div>
+        <div id="toggle-menu">
+            <a class="site-page">
+                <i class="fas fa-bars fa-fw"></i>
+            </a>
+        </div>
+    </div>
+</nav>
+<!--  footer  -->
+<footer th:fragment="footer(bgImg)" id="footer" th:style="|background-image: url(${bgImg ?: (tenantConfig?.webInfo?.indexImg ?: '/img/index_image.jpg')})|">
+    <div id="footer-wrap">
+        <div class="copyright" th:if="${tenantConfig?.webInfo?.copyright}" th:utext="${tenantConfig.webInfo.copyright}"></div>
+        <div class="footer_custom_text" th:if="${tenantConfig?.webInfo?.icp}">
+            <a target="_blank" rel="noopener" href="http://beian.miit.gov.cn" th:text="${tenantConfig.webInfo.icp}">豫ICP备2021148055号</a>
+        </div>
+    </div>
+</footer>
+<!-- Sidebar Widgets Fragments -->
+<!-- 1. Card Info -->
+<div th:fragment="card_info" class="card-widget card-info">
+    <div class="card-info-avatar is-center">
+        <img class="avatar-img"
+             th:src="${tenantConfig?.webInfo?.loadingImg ?: '/img/loading.gif'}"
+             th:data-lazy-src="${tenantConfig?.webInfo?.logo ?: '/img/avatar.png'}"
+             th:data-not-found-img="${tenantConfig?.webInfo?.notFoundImg ?: '/img/friend_404.gif'}"
+             onerror="this.onerror=null;this.src=this.getAttribute('data-not-found-img')"
+             alt="avatar">
+        <div class="author-info__name" th:text="${tenantConfig?.webInfo?.authorName ?: 'wyc'}">wyc</div>
+        <div class="author-info__description" th:text="${tenantConfig?.webInfo?.description ?: '个人技术博客和工具集'}">个人技术博客和工具集</div>
+    </div>
+    <div class="card-info-data">
+        <div class="card-info-data-item is-center">
+            <a href="/archives.html">
+                <div class="headline">文章</div>
+                <div class="length-num" th:text="${articleCount}">0</div>
+            </a>
+        </div>
+        <div class="card-info-data-item is-center">
+            <a href="/tags.html">
+                <div class="headline">标签</div>
+                <div class="length-num" th:text="${tagCount}">0</div>
+            </a>
+        </div>
+        <div class="card-info-data-item is-center">
+            <a href="/categories.html">
+                <div class="headline">分类</div>
+                <div class="length-num" th:text="${categoryCount}">0</div>
+            </a>
+        </div>
+    </div>
+    <a class="button--animated" id="card-info-btn" target="_blank" rel="noopener" th:href="${tenantConfig?.socialInfo?.github ?: 'https://github.com/'}">
+        <i class="fab fa-github"></i>
+        <span>关注我</span>
+    </a>
+    <div class="card-info-social-icons is-center">
+        <a class="social-icon" th:href="${tenantConfig?.socialInfo?.github ?: 'https://github.com/'}" target="_blank" title="Github">
+            <i class="fab fa-github"></i>
+        </a>
+        <a class="social-icon" th:href="'mailto:' + ${tenantConfig?.socialInfo?.email ?: '110@163.com'}" target="_blank" title="Email">
+            <i class="fas fa-envelope"></i>
+        </a>
+        <a class="social-icon" th:href="${tenantConfig?.socialInfo?.wechat ?: 'https://www.processon.com'}" target="_blank" title="Wechat">
+            <i class="fab fa-weixin" th:if="${tenantConfig?.socialInfo?.wechat}"></i>
+            <i class="fas fa-pencil-square" th:unless="${tenantConfig?.socialInfo?.wechat}"></i>
+        </a>
+    </div>
+</div>
+<!-- 2. Card Announcement -->
+<div th:fragment="card_announcement" class="card-widget card-announcement">
+    <div class="item-headline">
+        <i class="fas fa-bullhorn card-announcement-animation"></i>
+        <span>公告</span>
+    </div>
+    <div class="announcement_content" th:text="${tenantConfig?.webInfo?.announcement ?: '暂无公告信息'}">暂无公告信息</div>
+</div>
+<!-- 3. Card Recent Post -->
+<div th:fragment="card_recent_post" class="card-widget card-recent-post">
+    <div class="item-headline">
+        <i class="fas fa-history"></i>
+        <span>最新文章</span>
+    </div>
+    <div class="aside-list">
+        <div class="aside-list-item" th:each="article : ${recentArticles}">
+            <a class="thumbnail" th:href="@{'/article/' + ${article.id}}" th:title="${article.title}">
+                <img th:src="${tenantConfig?.webInfo?.loadingImg ?: '/img/loading.gif'}"
+                    th:data-lazy-src="${article.thumbnail ?: (tenantConfig?.webInfo?.notFoundImg ?: '/img/404.jpg')}"
+                    th:data-not-found-img="${tenantConfig?.webInfo?.notFoundImg ?: '/img/404.jpg'}"
+                    onerror="this.onerror=null;this.src=this.getAttribute('data-not-found-img')"
+                    th:alt="${article.title}">
+            </a>
+            <div class="content">
+                <a class="title" th:href="@{'/article/' + ${article.id}}" th:title="${article.title}" th:text="${article.title}"></a>
+                <time th:datetime="${article.createTime}"
+                      th:title="'发表于 ' + ${#temporals.format(article.createTime, 'yyyy-MM-dd HH:mm:ss')}"
+                      th:text="${#temporals.format(article.createTime, 'yyyy-MM-dd')}"></time>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- 4. Card Newest Comments (Placeholder for JS or future implementation) -->
+<div th:fragment="card_newest_comments" class="card-widget" id="card-newest-comments">
+    <div class="item-headline">
+        <i class="fas fa-bolt"></i>
+        <span>最新评论</span>
+    </div>
+    <div class="aside-list">
+        <span>正在加载中...</span>
+    </div>
+</div>
+<!-- 5. Card Categories -->
+<div th:fragment="card_categories" class="card-widget card-categories">
+    <div class="item-headline">
+        <i class="fas fa-folder-open"></i>
+        <span>分类</span>
+        <a class="card-more-btn" href="/categories.html" title="查看更多">
+            <i class="fas fa-angle-right"></i>
+        </a>
+    </div>
+    <ul class="card-category-list" id="aside-cat-list">
+        <li class="card-category-list-item" th:each="category : ${asideCategories}" th:classappend="${not #lists.isEmpty(category.children)} ? 'parent' : ''">
+            <th:block th:replace="~{::category_item(${category})}"></th:block>
+        </li>
+    </ul>
+</div>
+<!-- Category Item Fragment for recursion -->
+<th:block th:fragment="category_item(category)">
+    <a class="card-category-list-link" th:href="@{'/category/' + ${category.id}}">
+        <span class="card-category-list-name" th:text="${category.name}">分类名</span>
+        <span class="card-category-list-count" th:text="${category.articleCount}">0</span>
+        <i class="fas fa-caret-left" th:if="${not #lists.isEmpty(category.children)}"></i>
+    </a>
+    <ul class="card-category-list child" th:if="${not #lists.isEmpty(category.children)}" style="display: none;">
+        <li class="card-category-list-item" th:each="child : ${category.children}" th:classappend="${not #lists.isEmpty(child.children)} ? 'parent' : ''">
+            <th:block th:replace="~{::category_item(${child})}"></th:block>
+        </li>
+    </ul>
+</th:block>
+<!-- 6. Card Archives -->
+<div th:fragment="card_archives" class="card-widget card-archives">
+    <div class="item-headline">
+        <i class="fas fa-archive"></i>
+        <span>归档</span>
+    </div>
+    <ul class="card-archive-list">
+        <li class="card-archive-list-item" th:each="archive : ${archives}">
+            <a class="card-archive-list-link" th:href="@{'/archives/' + ${archive.year}}">
+                <span class="card-archive-list-date" th:text="${archive.year}">2016</span>
+                <span class="card-archive-list-count" th:text="${archive.count}">0</span>
+            </a>
+        </li>
+    </ul>
+</div>
+<!-- 7. Card Web Info -->
+<div th:fragment="card_webinfo" class="card-widget card-webinfo">
+    <div class="item-headline">
+        <i class="fas fa-chart-line"></i>
+        <span>网站资讯</span>
+    </div>
+    <div class="webinfo">
+        <div class="webinfo-item">
+            <div class="item-name">文章数目 :</div>
+            <div class="item-count" th:text="${articleCount}">0</div>
+        </div>
+        <div class="webinfo-item">
+            <div class="item-name">运行时间 :</div>
+            <div class="item-count" id="runtimeshow">100 天</div>
+        </div>
+        <div class="webinfo-item">
+            <div class="item-name">本站访客数 :</div>
+            <div class="item-count" id="busuanzi_value_site_uv"></div>
+        </div>
+        <div class="webinfo-item">
+            <div class="item-name">本站总访问量 :</div>
+            <div class="item-count" id="busuanzi_value_site_pv"></div>
+        </div>
+        <div class="webinfo-item">
+            <div class="item-name">最后更新日期 :</div>
+            <div class="item-count" th:text="${#temporals.format(lastUpdateTime, 'yyyy-MM-dd')}">2022-08-18</div>
+        </div>
+    </div>
+</div>
+<!-- 8. Card TOC -->
+<div th:fragment="card_toc" class="card-widget" id="card-toc">
+    <div class="item-headline">
+        <i class="fas fa-stream"></i>
+        <span>目录</span>
+    </div>
+    <div class="toc-content">
+        <div id="toc-container"></div>
+    </div>
+</div>
+
+<!-- bottom script 页面底部引入js -->
+<div th:fragment="bottomscript" id="bottomscript">
+    <script th:src="@{/js/main.js}"></script>
+    <script th:src="@{/js/tw_cn.js}"></script>
+    <script>
+        var preloader = {
+            endLoading: () => {
+                document.body.style.overflow = 'auto';
+                var $loadingBox = document.getElementById('loading-box');
+                if ($loadingBox) $loadingBox.classList.add("loaded");
+            },
+            initLoading: () => {
+                document.body.style.overflow = '';
+                var $loadingBox = document.getElementById('loading-box');
+                if ($loadingBox) $loadingBox.classList.remove("loaded");
+            }
+        }
+        // 优先在 DOMContentLoaded 时隐藏，提高响应速度
+        // document.addEventListener('DOMContentLoaded', () => {
+        //     preloader.endLoading();
+        // });
+        // // 兜底：如果资源加载过慢，window.load 也会触发
+        // window.addEventListener('load', preloader.endLoading);
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                preloader.endLoading();
+            }, 300);
+        });
+    </script>
+    <div class="js-pjax">
+    </div>
+</div>
+</html>

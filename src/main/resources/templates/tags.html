@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="light" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{template::common_head('标签 | ' + ${tenantConfig?.name ?: 'FreeCity'}, '文章标签页面')}">
+</head>
+<body>
+<div th:replace="~{template::loading}"></div>
+<div th:replace="~{template::background}"></div>
+<div th:replace="~{template::sidebar}"></div>
+<div th:replace="~{template::search}"></div>
+
+<div class="page" id="body-wrap">
+    <header class="not-home-page" id="page-header" th:style="|background-image: url(${tenantConfig?.webInfo?.indexImg ?: '/img/index_image.jpg'})|">
+        <nav th:replace="~{template::nav}" id="nav"></nav>
+        <div id="page-site-info">
+            <h1 id="site-title">标签</h1>
+        </div>
+    </header>
+
+    <main class="layout" id="content-inner">
+        <div id="page">
+            <div class="tag-cloud-list is-center">
+                <div class="tag-cloud-title is-center" th:text="'标签 - ' + ${tagCount}">标签 - 0</div>
+                <div class="tag-cloud-tags">
+                    <a th:each="tag : ${allTags}" 
+                       th:href="@{'/tag/' + ${tag.id}}" 
+                       th:style="'font-size: ' + ${12 + (tag.articleCount > 20 ? 20 : tag.articleCount)} + 'px; color: rgb(' + ${tag.id * 37 % 200} + ',' + ${tag.id * 73 % 200} + ',' + ${tag.id * 113 % 200} + ');'"
+                       th:title="${tag.name} + ' (' + ${tag.articleCount} + ')'">
+                        <span th:text="${tag.name}">标签名</span>
+                        <sup th:text="${tag.articleCount}">0</sup>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="aside-content" id="aside-content">
+            <div th:replace="~{template :: card_info}"></div>
+            <div th:replace="~{template :: card_announcement}"></div>
+            <div class="sticky_layout">
+                <div th:replace="~{template :: card_recent_post}"></div>
+                <div th:replace="~{template :: card_categories}"></div>
+                <div th:replace="~{template :: card_archives}"></div>
+            </div>
+        </div>
+    </main>
+
+    <footer th:replace="~{template::footer(null)}" id="footer"></footer>
+</div>
+
+<div th:replace="~{template::bottomscript}"></div>
+
+</body>
+</html>
