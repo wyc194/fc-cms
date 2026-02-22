@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>正则表达式测试 - 在线工具箱 - FreeCity</title>
+    <meta name="author" content="wyc">
+    <meta name="copyright" content="wyc">
+    <meta name="format-detection" content="telephone=no">
+    <meta name="theme-color" content="#ffffff">
+    <meta name="description" content="在线正则表达式测试工具，支持实时匹配、语法高亮、多种修饰符，帮助开发者快速验证和调试正则表达式。">
+    <link rel="shortcut icon" href="/img/favicon.ico">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/normalize.css@8.0.1/normalize.min.css">
+    <link rel="stylesheet" href="/css/base.css">
+    <link rel="stylesheet" href="/css/layout.css">
+    <link rel="stylesheet" href="/css/tools.css">
+    <link rel="stylesheet" href="/css/tools/tool-detail.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.1/css/all.min.css">
+    <script src="/js/config.js"></script>
+    <script src="/js/utils.js"></script>
+    <script src="/js/init.js"></script>
+    <style>
+        :root {
+            --regex-border: #dce0e5;
+            --regex-bg: #f8f9fa;
+            --regex-bg-hover: #e9ecef;
+            --regex-primary: #49b1f5;
+            --regex-primary-alpha: rgba(73, 177, 245, 0.1);
+            --regex-text: #343a40;
+            --regex-text-muted: #6c757d;
+            --regex-highlight-bg: #d1e7dd;
+            --regex-highlight-border: #a3cfbb;
+            --regex-highlight-alt-bg: #cff4fc;
+            --regex-highlight-alt-border: #9eeaf9;
+            --regex-font-mono: 'JetBrains Mono', 'Fira Code', Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace;
+            --regex-spacing: 12px;
+        }
+
+        .tool-workspace {
+            display: flex;
+            flex-direction: column;
+            gap: var(--regex-spacing);
+            max-width: 100%;
+        }
+
+        /* Input Section */
+        .regex-section {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .regex-input-wrapper {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        @media (min-width: 768px) {
+            .regex-input-wrapper {
+                flex-direction: row;
+                align-items: stretch;
+            }
+        }
+
+        .regex-bar {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            background: #fff;
+            border: 1px solid var(--regex-border);
+            border-radius: 6px;
+            padding: 4px 8px;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .regex-bar:focus-within {
+            border-color: var(--regex-primary);
+            box-shadow: 0 0 0 3px var(--regex-primary-alpha);
+        }
+
+        .regex-slash {
+            color: #adb5bd;
+            font-size: 1.2rem;
+            font-weight: 600;
+            padding: 0 6px;
+            user-select: none;
+        }
+
+        #regexPattern {
+            flex: 1;
+            border: none;
+            outline: none;
+            padding: 8px 0;
+            font-family: var(--regex-font-mono);
+            font-size: 1.05rem;
+            color: var(--regex-text);
+            background: transparent;
+            min-width: 0;
+        }
+
+        .btn-copy-regex {
+            background: transparent;
+            border: none;
+            color: #adb5bd;
+            cursor: pointer;
+            padding: 6px 10px;
+            border-radius: 4px;
+            transition: all 0.2s;
+        }
+
+        .btn-copy-regex:hover {
+            color: var(--regex-text);
+            background-color: var(--regex-bg);
+        }
+
+        /* Flags */
+        .regex-flags {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+            padding: 6px 12px;
+            background: #fff;
+            border: 1px solid var(--regex-border);
+            border-radius: 6px;
+        }
+
+        .flag-label {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            cursor: pointer;
+            user-select: none;
+            color: var(--regex-text-muted);
+            font-family: var(--regex-font-mono);
+            font-size: 0.85rem;
+            padding: 2px 6px;
+            border-radius: 4px;
+            transition: background 0.2s;
+        }
+
+        .flag-label:hover {
+            background: var(--regex-bg);
+            color: var(--regex-text);
+        }
+
+        .flag-label input[type="checkbox"] {
+            margin: 0;
+            accent-color: var(--regex-primary);
+        }
+
+        .error-message {
+            color: #dc3545;
+            background: #fff5f5;
+            border: 1px solid #fcc;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            display: none;
+            animation: fadeIn 0.2s ease;
+        }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Editor Section */
+        .editor-container {
+            display: flex;
+            flex-direction: column;
+            border: 1px solid var(--regex-border);
+            border-radius: 6px;
+            background: #fff;
+            overflow: hidden;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.02);
+        }
+
+        .editor-toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 6px 12px;
+            background: #fcfcfc;
+            border-bottom: 1px solid var(--regex-border);
+        }
+
+        .editor-label {
+            font-weight: 600;
+            font-size: 0.85rem;
+            color: var(--regex-text-muted);
+        }
+
+        .editor-actions {
+            display: flex;
+            gap: 6px;
+        }
+
+        .btn-action {
+            background: transparent;
+            border: 1px solid transparent;
+            color: var(--regex-text-muted);
+            cursor: pointer;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .btn-action:hover {
+            color: var(--regex-text);
+            background: var(--regex-bg);
+            border-color: #e9ecef;
+        }
+
+        .match-area {
+            position: relative;
+            min-height: 200px;
+            display: grid;
+            background: #fff;
+        }
+
+        .match-highlights, .match-textarea {
+            grid-area: 1 / 1;
+            width: 100%;
+            min-height: 200px;
+            padding: 12px;
+            font-family: var(--regex-font-mono);
+            font-size: 14px;
+            line-height: 1.6;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            border: none;
+            margin: 0;
+            box-sizing: border-box;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+
+        .match-textarea {
+            background: transparent;
+            color: transparent;
+            caret-color: #333;
+            z-index: 2;
+            resize: vertical;
+            outline: none;
+        }
+
+        .match-textarea::placeholder {
+            color: #ced4da;
+        }
+
+        .match-highlights {
+            z-index: 1;
+            color: var(--regex-text);
+            background: transparent;
+            pointer-events: none;
+        }
+
+        .match-highlight {
+            background-color: var(--regex-highlight-bg);
+            border-bottom: 2px solid var(--regex-highlight-border);
+            border-radius: 2px;
+        }
+        
+        .match-highlight:nth-child(even) {
+            background-color: var(--regex-highlight-alt-bg);
+            border-bottom-color: var(--regex-highlight-alt-border);
+        }
+
+        .match-footer {
+            padding: 4px 12px;
+            background: #f8f9fa;
+            border-top: 1px solid var(--regex-border);
+            font-size: 0.75rem;
+            color: var(--regex-text-muted);
+            display: flex;
+            justify-content: space-between;
+        }
+
+        /* Tools Grid */
+        .tools-container {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: var(--regex-spacing);
+        }
+
+        @media (min-width: 992px) {
+            .tools-container {
+                grid-template-columns: 2fr 1fr;
+            }
+        }
+
+        .tool-box {
+            background: #fff;
+            border: 1px solid var(--regex-border);
+            border-radius: 6px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .tool-box-header {
+            padding: 10px 15px;
+            border-bottom: 1px solid var(--regex-border);
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--regex-text);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: #fbfbfb;
+        }
+
+        .tool-box-header i {
+            color: var(--regex-primary);
+        }
+
+        .tool-box-content {
+            padding: 12px;
+            overflow-y: auto;
+            max-height: 320px;
+        }
+
+        /* Preset Buttons */
+        .preset-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 8px;
+        }
+
+        .btn-preset {
+            background: #fff;
+            border: 1px solid var(--regex-border);
+            border-radius: 4px;
+            padding: 8px 10px;
+            text-align: left;
+            font-size: 0.85rem;
+            color: #495057;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-preset:hover {
+            border-color: var(--regex-primary);
+            color: var(--regex-primary);
+            background: #f0f7ff;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .btn-preset i {
+            font-style: normal;
+            font-size: 1rem;
+            opacity: 0.8;
+        }
+
+        /* Syntax List */
+        .syntax-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+        }
+
+        .syntax-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.8rem;
+            padding: 6px 8px;
+            border-bottom: 1px solid #f1f3f5;
+        }
+
+        .syntax-item:last-child {
+            border-bottom: none;
+        }
+        
+        .syntax-item:hover {
+            background-color: #f8f9fa;
+        }
+
+        .syntax-code {
+            font-family: var(--regex-font-mono);
+            color: #e83e8c;
+            background: #fff0f6;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-weight: 500;
+        }
+
+        .syntax-desc {
+            color: #666;
+        }
+
+        /* Custom Scrollbar */
+        .match-textarea::-webkit-scrollbar,
+        .tool-box-content::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        .match-textarea::-webkit-scrollbar-thumb,
+        .tool-box-content::-webkit-scrollbar-thumb {
+            background: #dee2e6;
+            border-radius: 3px;
+        }
+        .match-textarea::-webkit-scrollbar-thumb:hover,
+        .tool-box-content::-webkit-scrollbar-thumb:hover {
+            background: #ced4da;
+        }
+    </style>
+</head>
+<body>
+<div class="page" id="body-wrap">
+    <main class="layout hide-aside" id="content-inner">
+        <div id="tool-page">
+            <div class="tool-layout">
+                <!-- 左侧广告位 -->
+                <aside class="tool-sidebar-ad left-ad" style="display: none;">
+                    <a href="https://cloud.tencent.com/act/cps/redirect?redirect=2446&cps_key=1e4338749e52ca51baba74f54cd8a65f&from=console" 
+                       target="_blank" rel="noopener" class="ad-link" title="【腾讯云】云服务器、云数据库、COS、CDN、短信等云产品特惠热卖中">
+                        <img src="https://qcloudimg.tencent-cloud.cn/raw/c6d28892f3e8f804792c00e620327f31.png" alt="腾讯云广告" class="ad-img vertical">
+                    </a>
+                </aside>
+
+                <!-- 主体内容 -->
+                <div class="tool-main-content">
+                    <div class="tool-detail-container">
+                        <div class="tool-header-nav tool-dev">
+                            <a href="/" class="tool-home-link">首页</a>
+                            <i class="fas fa-chevron-right tool-title-sep"></i>
+                            <a href="/tools.html" class="tool-home-link">在线工具箱</a>
+                            <i class="fas fa-chevron-right tool-title-sep"></i>
+                            <h1>正则表达式测试</h1>
+                            <span class="tool-tag">开发辅助</span>
+                        </div>
+
+                        <!-- 工具工作区 -->
+                        <div class="tool-workspace">
+                            
+                            <!-- 1. 正则输入与设置 -->
+                            <div class="regex-section">
+                                <div class="regex-input-wrapper">
+                                    <div class="regex-bar">
+                                        <span class="regex-slash">/</span>
+                                        <input type="text" id="regexPattern" placeholder="输入正则表达式..." value="\b\w+\b" spellcheck="false" autocomplete="off">
+                                        <span class="regex-slash">/</span>
+                                        <button class="btn-copy-regex" id="btnCopyRegex" title="复制完整正则"><i class="fas fa-copy"></i></button>
+                                    </div>
+                                    <div class="regex-flags">
+                                        <label class="flag-label" title="Global search (全局匹配)"><input type="checkbox" id="flagGlobal" checked> global</label>
+                                        <label class="flag-label" title="Case-insensitive (忽略大小写)"><input type="checkbox" id="flagInsensitive" checked> insens.</label>
+                                        <label class="flag-label" title="Multi-line (多行模式)"><input type="checkbox" id="flagMultiline" checked> multi</label>
+                                        <label class="flag-label" title="Dot matches all (点匹配换行)"><input type="checkbox" id="flagDotAll"> single</label>
+                                        <label class="flag-label" title="Unicode"><input type="checkbox" id="flagUnicode"> unicode</label>
+                                    </div>
+                                </div>
+                                <div class="error-message" id="regexError"></div>
+                            </div>
+
+                            <!-- 2. 测试文本编辑器 -->
+                            <div class="editor-container">
+                                <div class="editor-toolbar">
+                                    <span class="editor-label">测试文本</span>
+                                    <div class="editor-actions">
+                                        <button class="btn-action" id="btnPaste" title="粘贴剪贴板内容"><i class="fas fa-paste"></i> 粘贴</button>
+                                        <button class="btn-action" id="btnClear" title="清空文本"><i class="fas fa-trash-alt"></i> 清空</button>
+                                    </div>
+                                </div>
+                                <div class="match-area">
+                                    <div class="match-highlights" id="matchHighlights"></div>
+                                    <textarea class="match-textarea" id="testString" placeholder="在此输入需要匹配的测试文本..." spellcheck="false"></textarea>
+                                </div>
+                                <div class="match-footer" id="matchInfo">
+                                    <span>匹配结果：0 处</span>
+                                    <span>输入内容后自动匹配</span>
+                                </div>
+                            </div>
+
+                            <!-- 3. 辅助工具区 -->
+                            <div class="tools-container">
+                                <!-- 常用正则 -->
+                                <div class="tool-box">
+                                    <div class="tool-box-header">
+                                        <i class="fas fa-star"></i> 常用正则表达式
+                                    </div>
+                                    <div class="tool-box-content">
+                                        <div class="preset-grid">
+                                            <button class="btn-preset btn-regex-preset" data-regex="^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$" data-flags="g"><i>📧</i> 电子邮箱</button>
+                                            <button class="btn-preset btn-regex-preset" data-regex="^1[3-9]\d{9}$" data-flags="g"><i>📱</i> 手机号(CN)</button>
+                                            <button class="btn-preset btn-regex-preset" data-regex="^[1-9]\d{5}(?:18|19|20)\d{2}(?:0[1-9]|10|11|12)(?:0[1-9]|[1-2]\d|30|31)\d{3}[\dXx]$" data-flags="g"><i>🆔</i> 身份证(18位)</button>
+                                            <button class="btn-preset btn-regex-preset" data-regex="^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$" data-flags="g"><i>🌐</i> IPv4地址</button>
+                                            <button class="btn-preset btn-regex-preset" data-regex="^https?:\/\/(?:www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b(?:[-a-zA-Z0-9()@:%_\+.~#?&\/=]*)$" data-flags="g"><i>🔗</i> 网址URL</button>
+                                            <button class="btn-preset btn-regex-preset" data-regex="^\d{4}-(?:0[1-9]|1[0-2])-(?:0[1-9]|[12]\d|3[01])$" data-flags="g"><i>📅</i> 日期(Y-M-D)</button>
+                                            <button class="btn-preset btn-regex-preset" data-regex="[\u4e00-\u9fa5]" data-flags="g"><i>🇨🇳</i> 中文字符</button>
+                                            <button class="btn-preset btn-regex-preset" data-regex="^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$" data-flags="g"><i>🔑</i> 强密码</button>
+                                            <button class="btn-preset btn-regex-preset" data-regex="^[1-9][0-9]{4,}$" data-flags="g"><i>🐧</i> QQ号码</button>
+                                            <button class="btn-preset btn-regex-preset" data-regex="^[1-9]\d{5}$" data-flags="g"><i>📮</i> 邮政编码</button>
+                                            <button class="btn-preset btn-regex-preset" data-regex="^[a-zA-Z0-9_-]{4,16}$" data-flags="g"><i>👤</i> 用户名</button>
+                                            <button class="btn-preset btn-regex-preset" data-regex="^#?([a-fA-F0-9]{6}|[a-fA-F0-9]{3})$" data-flags="gi"><i>🎨</i> Hex颜色</button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- 语法速查 -->
+                                <div class="tool-box">
+                                    <div class="tool-box-header">
+                                        <i class="fas fa-book"></i> 语法速查
+                                    </div>
+                                    <div class="tool-box-content">
+                                        <div class="syntax-list">
+                                            <div class="syntax-item"><span class="syntax-code">.</span> <span class="syntax-desc">任意字符 (除换行)</span></div>
+                                            <div class="syntax-item"><span class="syntax-code">\d</span> <span class="syntax-desc">数字 [0-9]</span></div>
+                                            <div class="syntax-item"><span class="syntax-code">\w</span> <span class="syntax-desc">单词字符 [A-Za-z0-9_]</span></div>
+                                            <div class="syntax-item"><span class="syntax-code">\s</span> <span class="syntax-desc">空白字符</span></div>
+                                            <div class="syntax-item"><span class="syntax-code">^</span> <span class="syntax-desc">字符串/行开头</span></div>
+                                            <div class="syntax-item"><span class="syntax-code">$</span> <span class="syntax-desc">字符串/行结尾</span></div>
+                                            <div class="syntax-item"><span class="syntax-code">*</span> <span class="syntax-desc">0次或多次</span></div>
+                                            <div class="syntax-item"><span class="syntax-code">+</span> <span class="syntax-desc">1次或多次</span></div>
+                                            <div class="syntax-item"><span class="syntax-code">?</span> <span class="syntax-desc">0次或1次</span></div>
+                                            <div class="syntax-item"><span class="syntax-code">{n}</span> <span class="syntax-desc">重复n次</span></div>
+                                            <div class="syntax-item"><span class="syntax-code">[abc]</span> <span class="syntax-desc">字符集合</span></div>
+                                            <div class="syntax-item"><span class="syntax-code">(...)</span> <span class="syntax-desc">捕获组</span></div>
+                                            <div class="syntax-item"><span class="syntax-code">(?:...)</span> <span class="syntax-desc">非捕获组</span></div>
+                                            <div class="syntax-item"><span class="syntax-code">\b</span> <span class="syntax-desc">单词边界</span></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                        </div>
+
+                        <!-- 工具介绍 -->
+                        <section class="tool-info-section">
+                            <h2>关于正则表达式测试工具</h2>
+                            <p>这是一个基于浏览器的在线正则表达式测试工具，所有匹配计算均在本地完成，确保您的数据隐私安全。</p>
+                            <h3>主要功能：</h3>
+                            <ul>
+                                <li><strong>实时匹配：</strong> 输入正则和文本后立即显示匹配结果。</li>
+                                <li><strong>可视化高亮：</strong> 不同颜色的高亮区分交替匹配项，清晰直观。</li>
+                                <li><strong>常用预设：</strong> 内置常用的正则表达式（如邮箱、身份证、手机号等），一键应用。</li>
+                                <li><strong>参数控制：</strong> 支持全局(g)、忽略大小写(i)、多行(m)等常用修饰符。</li>
+                            </ul>
+                        </section>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+</body>
+</html>

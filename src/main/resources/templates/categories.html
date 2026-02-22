@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="light" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{template::common_head('分类 | ' + ${tenantConfig?.name ?: 'FreeCity'}, '文章分类页面')}">
+</head>
+<body>
+<div th:replace="~{template::loading}"></div>
+<div th:replace="~{template::background}"></div>
+<div th:replace="~{template::sidebar}"></div>
+<div th:replace="~{template::search}"></div>
+
+<div class="page" id="body-wrap">
+    <header class="not-home-page" id="page-header" th:style="|background-image: url(${tenantConfig?.webInfo?.indexImg ?: '/img/index_image.jpg'})|">
+        <nav th:replace="~{template::nav}" id="nav"></nav>
+        <div id="page-site-info">
+            <h1 id="site-title">分类</h1>
+        </div>
+    </header>
+
+    <main class="layout" id="content-inner">
+        <div id="page">
+            <div class="category-lists">
+                <div class="category-title is-center" th:text="'分类 - ' + ${categoryCount}">分类 - 0</div>
+                <ul class="category-list">
+                    <li class="category-list-item" th:each="category : ${allCategories}">
+                        <a class="category-list-link" th:href="@{'/category/' + ${category.id}}" th:text="${category.name}">分类名</a>
+                        <span class="category-list-count" th:text="${category.articleCount}">0</span>
+                        <ul class="category-list-child" th:if="${not #lists.isEmpty(category.children)}">
+                            <li class="category-list-item" th:each="child : ${category.children}">
+                                <th:block th:replace="~{::category_list_item(${child})}"></th:block>
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="aside-content" id="aside-content">
+            <div th:replace="~{template :: card_info}"></div>
+            <div th:replace="~{template :: card_announcement}"></div>
+            <div class="sticky_layout">
+                <div th:replace="~{template :: card_recent_post}"></div>
+                <div th:replace="~{template :: card_categories}"></div>
+                <div th:replace="~{template :: card_archives}"></div>
+            </div>
+        </div>
+    </main>
+
+    <footer th:replace="~{template::footer(null)}" id="footer"></footer>
+</div>
+
+<div th:replace="~{template::bottomscript}"></div>
+
+<!-- 递归渲染分类列表项 -->
+<th:block th:fragment="category_list_item(category)">
+    <a class="category-list-link" th:href="@{'/category/' + ${category.id}}" th:text="${category.name}">子分类名</a>
+    <span class="category-list-count" th:text="${category.articleCount}">0</span>
+    <ul class="category-list-child" th:if="${not #lists.isEmpty(category.children)}">
+        <li class="category-list-item" th:each="child : ${category.children}">
+            <th:block th:replace="~{::category_list_item(${child})}"></th:block>
+        </li>
+    </ul>
+</th:block>
+
+</body>
+</html>

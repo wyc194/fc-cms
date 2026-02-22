@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="light" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{template::common_head('关于 | ' + ${tenantConfig?.name ?: 'FreeCity'}, '关于页面')}">
+</head>
+<body>
+<div th:replace="~{template::loading}"></div>
+<div th:replace="~{template::background}"></div>
+<div th:replace="~{template::sidebar}"></div>
+<div th:replace="~{template::search}"></div>
+
+<div class="page" id="body-wrap">
+    <header class="not-home-page" id="page-header" th:style="|background-image: url(${tenantConfig?.webInfo?.indexImg ?: '/img/index_image.jpg'})|">
+        <nav th:replace="~{template::nav}" id="nav"></nav>
+        <div id="page-site-info">
+            <h1 id="site-title">关于我</h1>
+        </div>
+    </header>
+
+    <main class="layout" id="content-inner">
+        <div id="page">
+            <article class="post-content" id="article-container">
+                <div class="author-box">
+                    <img class="avatar-img no-fancybox"
+                        th:src="${tenantConfig?.webInfo?.loadingImg ?: '/img/loading.gif'}"
+                        th:data-lazy-src="${tenantConfig?.webInfo?.logo ?: '/img/avatar.png'}"
+                        th:data-not-found-img="${tenantConfig?.webInfo?.notFoundImg ?: '/img/404.jpg'}"
+                        onerror="this.onerror=null;this.src=this.getAttribute('data-not-found-img')"
+                        th:alt="${tenantConfig?.webInfo?.authorName ?: 'wyc'}" />
+                </div>
+                
+                <div class="about-content" style="line-height: 2; font-size: 1.1em; text-align: center;">
+                    <div th:if="${tenantConfig?.webInfo?.aboutMe}" th:utext="${tenantConfig.webInfo.aboutMe}"></div>
+                    <th:block th:unless="${tenantConfig?.webInfo?.aboutMe}">
+                        <p>暂无相关介绍。</p>
+                    </th:block>
+                    <p style="margin-top: 50px; text-align: right;">—— From <span th:text="${tenantConfig?.webInfo?.authorName ?: 'wyc'}">wyc</span></p>
+                </div>
+            </article>
+        </div>
+
+        <div class="aside-content" id="aside-content">
+            <div th:replace="~{template :: card_info}"></div>
+            <div th:replace="~{template :: card_announcement}"></div>
+            <div class="sticky_layout">
+                <div th:replace="~{template :: card_recent_post}"></div>
+            </div>
+        </div>
+    </main>
+
+    <footer th:replace="~{template::footer(null)}" id="footer"></footer>
+</div>
+
+<div th:replace="~{template::bottomscript}"></div>
+</body>
+</html>

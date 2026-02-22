@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Unix 时间戳转换 - 在线工具箱 - FreeCity</title>
+    <meta name="author" content="wyc">
+    <meta name="copyright" content="wyc">
+    <meta name="format-detection" content="telephone=no">
+    <meta name="theme-color" content="#ffffff">
+    <meta name="description" content="在线 Unix 时间戳转换工具，支持北京时间、UTC 等多时区互转，提供秒/毫秒单位切换，实时显示当前时间戳。">
+    <link rel="shortcut icon" href="/img/favicon.ico">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/normalize.css@8.0.1/normalize.min.css">
+    <link rel="stylesheet" href="/css/base.css">
+    <link rel="stylesheet" href="/css/layout.css">
+    <link rel="stylesheet" href="/css/tools.css">
+    <link rel="stylesheet" href="/css/tools/tool-detail.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.1/css/all.min.css">
+    <noscript>
+        <style type="text/css">
+            #nav { opacity: 1 }
+            .justified-gallery img { opacity: 1 }
+            #recent-posts time, #post-meta time { display: inline !important }
+        </style>
+    </noscript>
+    <script src="/js/config.js"></script>
+    <script src="/js/utils.js"></script>
+    <script src="/js/init.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dayjs@1/dayjs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dayjs@1/plugin/utc.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dayjs@1/plugin/timezone.js"></script>
+    <style>
+        /* timestamp tool specific styles */
+        .current-time-section {
+            background: var(--tool-bg-color, #f8f9fa);
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            margin-bottom: 20px;
+            border: 1px solid var(--tool-border-color, #e9ecef);
+        }
+        .current-time-display {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--primary-color, #49b1f5);
+            margin: 10px 0;
+            font-family: monospace;
+        }
+        .current-time-label {
+            color: #666;
+            font-size: 0.9rem;
+        }
+        .control-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+        .control-row input[type="text"], 
+        .control-row input[type="datetime-local"],
+        .control-row select {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            flex: 1;
+            min-width: 200px;
+        }
+        .control-row select {
+            flex: 0 0 auto;
+            min-width: 150px;
+        }
+        .unit-toggle {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            font-size: 0.9rem;
+        }
+        .conversion-card {
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #eee;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+        .card-title {
+            font-size: 1.1rem;
+            font-weight: bold;
+            margin-bottom: 15px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .btn-action {
+            padding: 8px 20px;
+            background: var(--primary-color, #49b1f5);
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .btn-action:hover {
+            background: var(--primary-hover-color, #3fa0db);
+        }
+        .timezone-select-wrapper {
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+    </style>
+</head>
+<body>
+<div class="page" id="body-wrap">
+    <main class="layout hide-aside" id="content-inner">
+        <div id="tool-page">
+            <div class="tool-layout">
+                <!-- 左侧广告位 -->
+                <aside class="tool-sidebar-ad left-ad" style="display: none;">
+                     <a href="https://cloud.tencent.com/act/cps/redirect?redirect=2446&cps_key=1e4338749e52ca51baba74f54cd8a65f&from=console" 
+                       target="_blank" rel="noopener" class="ad-link" title="【腾讯云】云服务器、云数据库、COS、CDN、短信等云产品特惠热卖中">
+                        <img src="https://qcloudimg.tencent-cloud.cn/raw/c6d28892f3e8f804792c00e620327f31.png" alt="腾讯云广告" class="ad-img vertical">
+                    </a>
+                </aside>
+
+                <!-- 主体内容 -->
+                <div class="tool-main-content">
+                    <div class="tool-detail-container">
+                        <div class="tool-header-nav tool-dev">
+                            <a href="/" class="tool-home-link">首页</a>
+                            <i class="fas fa-chevron-right tool-title-sep"></i>
+                            <a href="/tools.html" class="tool-home-link">在线工具箱</a>
+                            <i class="fas fa-chevron-right tool-title-sep"></i>
+                            <h1>Unix 时间戳转换</h1>
+                            <span class="tool-tag">开发辅助</span>
+                        </div>
+
+                        <!-- 水平广告位 (顶部) -->
+                        <div class="tool-horizontal-ad ad-top" style="display: none;">
+                            <a href="https://cloud.tencent.com/act/cps/redirect?redirect=2446&cps_key=1e4338749e52ca51baba74f54cd8a65f&from=console" 
+                               target="_blank" rel="noopener" class="ad-link" title="【腾讯云】云服务器、云数据库、COS、CDN、短信等云产品特惠热卖中">
+                                <img src="https://qcloudimg.tencent-cloud.cn/raw/c6d28892f3e8f804792c00e620327f31.png" alt="腾讯云广告" class="ad-img horizontal">
+                            </a>
+                        </div>
+
+                        <!-- 工具工作区 -->
+                        <div class="tool-workspace">
+                            
+                            <!-- 当前时间显示 -->
+                            <div class="current-time-section">
+                                <div class="current-time-label">当前时间</div>
+                                <div class="current-time-display" id="nowTimeDisplay">Loading...</div>
+                                <div class="current-time-label">
+                                    当前时间戳: <span id="nowTimestamp" style="color: #e67e22; font-weight: bold;">Loading...</span>
+                                    <button class="btn-icon-only" id="btnPause" title="暂停/继续"><i class="fas fa-pause"></i></button>
+                                </div>
+                            </div>
+
+                            <!-- 全局设置 -->
+                            <div class="timezone-select-wrapper">
+                                <label for="globalTimezone"><i class="fas fa-globe"></i> 目标时区：</label>
+                                <select id="globalTimezone">
+                                    <option value="Asia/Shanghai" selected>🇨🇳 中国标准时间 (Asia/Shanghai)</option>
+                                    <option value="UTC">🌍 协调世界时 (UTC/GMT)</option>
+                                    <option value="America/New_York">🇺🇸 美国东部时间 (America/New_York)</option>
+                                    <option value="America/Los_Angeles">🇺🇸 美国太平洋时间 (America/Los_Angeles)</option>
+                                    <option value="Europe/London">🇬🇧 伦敦时间 (Europe/London)</option>
+                                    <option value="Europe/Paris">🇫🇷 巴黎时间 (Europe/Paris)</option>
+                                    <option value="Asia/Tokyo">🇯🇵 东京时间 (Asia/Tokyo)</option>
+                                    <option value="Asia/Singapore">🇸🇬 新加坡时间 (Asia/Singapore)</option>
+                                    <option value="Australia/Sydney">🇦🇺 悉尼时间 (Australia/Sydney)</option>
+                                </select>
+                            </div>
+
+                            <!-- 转换区域 -->
+                            <div class="workspace-split" style="flex-direction: column; height: auto;">
+                                
+                                <!-- 时间戳转日期 -->
+                                <div class="conversion-card">
+                                    <div class="card-title">
+                                        <span><i class="fas fa-clock"></i> 时间戳转日期</span>
+                                        <div class="unit-toggle">
+                                            <label><input type="radio" name="tsUnit" value="s"> 秒(s)</label>
+                                            <label><input type="radio" name="tsUnit" value="ms" checked> 毫秒(ms)</label>
+                                        </div>
+                                    </div>
+                                    <div class="control-row">
+                                        <input type="text" id="inputTimestamp" placeholder="请输入 Unix 时间戳">
+                                        <button class="btn-action" id="btnTsToDate">转换 <i class="fas fa-arrow-right"></i></button>
+                                        <input type="text" id="outputDate" readonly placeholder="转换结果将显示在这里">
+                                    </div>
+                                </div>
+
+                                <!-- 日期转时间戳 -->
+                                <div class="conversion-card">
+                                    <div class="card-title">
+                                        <span><i class="fas fa-calendar-alt"></i> 日期转时间戳</span>
+                                    </div>
+                                    <div class="control-row">
+                                        <input type="text" id="inputDate" placeholder="YYYY-MM-DD HH:mm:ss">
+                                        <button class="btn-action" id="btnDateToTs">转换 <i class="fas fa-arrow-right"></i></button>
+                                        <div style="flex: 1; display: flex; gap: 10px;">
+                                            <input type="text" id="outputTimestampMs" readonly placeholder="毫秒时间戳">
+                                            <input type="text" id="outputTimestampS" readonly placeholder="秒时间戳">
+                                        </div>
+                                    </div>
+                                    <div style="font-size: 0.85rem; color: #888;">
+                                        * 支持格式：2023-01-01 12:00:00
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+
+                        <!-- 工具介绍 -->
+                        <section class="tool-info-section">
+                            <h2>关于 Unix 时间戳</h2>
+                            <div class="tool-info-content">
+                                <p>Unix 时间戳（Unix Timestamp）是从1970年1月1日（UTC/GMT的午夜）开始所经过的秒数，不考虑闰秒。</p>
+                                <p>本工具支持：</p>
+                                <ul>
+                                    <li><strong>多时区支持：</strong>支持全球主要时区的时间转换，不再局限于本地时间。</li>
+                                    <li><strong>秒/毫秒切换：</strong>智能识别或手动选择秒/毫秒单位。</li>
+                                    <li><strong>实时监控：</strong>实时显示当前时间戳，方便开发对照。</li>
+                                </ul>
+                                <p>常用编程语言获取时间戳：</p>
+                                <ul>
+                                    <li><strong>Java:</strong> <code>System.currentTimeMillis()</code></li>
+                                    <li><strong>JavaScript:</strong> <code>Date.now()</code> 或 <code>new Date().getTime()</code></li>
+                                    <li><strong>Python:</strong> <code>import time; time.time()</code></li>
+                                    <li><strong>PHP:</strong> <code>time()</code></li>
+                                </ul>
+                            </div>
+                        </section>
+
+                        <!-- 水平广告位 (底部) -->
+                        <div class="tool-horizontal-ad ad-bottom" style="display: none;">
+                            <a href="https://cloud.tencent.com/act/cps/redirect?redirect=2446&cps_key=1e4338749e52ca51baba74f54cd8a65f&from=console" 
+                               target="_blank" rel="noopener" class="ad-link" title="【腾讯云】云服务器、云数据库、COS、CDN、短信等云产品特惠热卖中">
+                                <img src="https://qcloudimg.tencent-cloud.cn/raw/c6d28892f3e8f804792c00e620327f31.png" alt="腾讯云广告" class="ad-img horizontal">
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 右侧广告位 -->
+                <aside class="tool-sidebar-ad right-ad" style="display: none;">
+                    <a href="https://cloud.tencent.com/act/cps/redirect?redirect=2446&cps_key=1e4338749e52ca51baba74f54cd8a65f&from=console" 
+                       target="_blank" rel="noopener" class="ad-link" title="【腾讯云】云服务器、云数据库、COS、CDN、短信等云产品特惠热卖中">
+                        <img src="https://qcloudimg.tencent-cloud.cn/raw/c6d28892f3e8f804792c00e620327f31.png" alt="腾讯云广告" class="ad-img vertical">
+                    </a>
+                </aside>
+            </div>
+        </div>
+    </main>
+
+    <footer id="footer">
+        <div id="footer-wrap">
+            <div class="copyright">&copy;2016 - 2030 By wyc</div>
+            <div class="footer_custom_text">
+                <a target="_blank" rel="noopener" href="http://www.beian.gov.cn">豫ICP备2021148055号</a>
+            </div>
+        </div>
+    </footer>
+</div>
+
+<script src="/js/tw_cn.js"></script>
+<script src="/js/tools/timestamp.js"></script>
+</body>
+</html>

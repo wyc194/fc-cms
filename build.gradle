@@ -1,0 +1,104 @@
+plugins {
+	id 'java'
+	id 'org.springframework.boot' version '3.3.2'
+	id 'io.spring.dependency-management' version '1.1.6'
+}
+
+group = 'club.freecity'
+version = '0.0.1-SNAPSHOT'
+
+java {
+	toolchain {
+		languageVersion = JavaLanguageVersion.of(21)
+	}
+}
+
+configurations {
+	compileOnly {
+		extendsFrom annotationProcessor
+	}
+}
+
+repositories {
+	mavenLocal()
+	mavenCentral()
+}
+
+dependencies {
+	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+	implementation 'org.springframework.boot:spring-boot-starter-security'
+	implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
+	implementation 'org.springframework.boot:spring-boot-starter-validation'
+	implementation 'org.springframework.boot:spring-boot-starter-web'
+	implementation 'org.springframework.boot:spring-boot-starter-cache'
+	implementation 'org.springframework.boot:spring-boot-starter-mail'
+	implementation 'com.github.ben-manes.caffeine:caffeine'
+//	implementation 'org.thymeleaf.extras:thymeleaf-extras-springsecurity6'
+	
+	// JWT
+	implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
+	runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.11.5'
+	runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.11.5'
+	
+	// Markdown parsing
+	implementation 'com.vladsch.flexmark:flexmark-all:0.64.8'
+	implementation 'com.googlecode.owasp-java-html-sanitizer:owasp-java-html-sanitizer:20260102.1'
+	
+	compileOnly 'org.projectlombok:lombok'
+	
+	developmentOnly 'org.springframework.boot:spring-boot-devtools'
+	
+	runtimeOnly 'com.mysql:mysql-connector-j'
+
+	annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
+	annotationProcessor 'org.projectlombok:lombok'
+	
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	testImplementation 'org.springframework.security:spring-security-test'
+	testImplementation 'com.h2database:h2'
+
+	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+tasks.named('test') {
+	// enabled = false // 禁用测试任务
+	useJUnitPlatform()
+}
+
+// 静态资源优化任务 (JS/CSS混淆压缩, HTML压缩)
+task minifyAssets(type: Exec) {
+    group = 'build'
+    description = 'Minify static assets (JS, CSS, HTML) for production'
+    
+    workingDir projectDir
+    
+    // 获取 Gradle 资源输出目录 (通常是 build/resources/main)
+    def resourcesDir = sourceSets.main.output.resourcesDir
+    
+    if (System.getProperty('os.name').toLowerCase().contains('windows')) {
+        commandLine 'cmd', '/c', "npm run build -- \"${resourcesDir}\""
+    } else {
+        commandLine 'npm', 'run', 'build', '--', resourcesDir
+    }
+
+    // 只有在执行打包任务时才运行压缩，避免影响开发效率
+    onlyIf {
+        gradle.taskGraph.hasTask(":jar") || gradle.taskGraph.hasTask(":bootJar")
+    }
+}
+
+// 确保在资源文件被复制到 build 目录后且在打包前执行压缩
+minifyAssets.dependsOn processResources
+// bootJar.dependsOn minifyAssets
+// jar.dependsOn minifyAssets
+// 显示声明下layered开启(Spring Boot 2.4开始已默认true), 自定义分层策略可以在layered{}块中配置
+bootJar {
+    dependsOn minifyAssets
+    layered {
+        enabled = true
+    }
+}
+
+jar {
+    dependsOn minifyAssets
+}

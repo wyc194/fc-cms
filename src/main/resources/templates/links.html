@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="light" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{template::common_head('网址收藏 | ' + ${tenantConfig?.name ?: 'FreeCity'}, '网址收藏')}">
+</head>
+<style>
+    /* 网址收藏页面：极简现代风格 */
+    #article-container {
+        padding: 10px 20px;
+    }
+
+    .flink-category-section {
+        margin-bottom: 10px;
+        background: var(--card-bg);
+        border-radius: 12px;
+        padding: 10px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
+    }
+
+    .flink-category-title {
+        display: flex;
+        align-items: center;
+        margin: 0 0 10px 0;
+        font-size: 1.2rem;
+        color: var(--text-highlight-color);
+        font-weight: 700;
+    }
+
+    .flink-category-title::before {
+        content: "";
+        display: inline-block;
+        width: 5px;
+        height: 1.2em;
+        background: var(--btn-bg);
+        margin-right: 12px;
+        border-radius: 3px;
+    }
+
+    .flink-table-wrapper {
+        border: 1px solid var(--light-grey);
+        border-radius: 8px;
+        overflow: hidden;
+    }
+
+    /* 适配自动生成的 .table-wrap */
+    .flink-table-wrapper .table-wrap {
+        margin: 0;
+        overflow-x: auto; /* 保持滚动特性 */
+        border-radius: 8px;
+    }
+
+    .flink-table {
+        width: 100%;
+        border-collapse: collapse;
+        table-layout: fixed;
+    }
+
+    .flink-table th {
+        background: var(--text-bg-hover);
+        color: var(--font-color);
+        font-weight: 600;
+        padding: 10px;
+        text-align: left;
+        border-bottom: 1px solid var(--light-grey);
+        font-size: 0.8rem;
+    }
+
+    .flink-table td {
+        padding: 10px 20px;
+        border-bottom: 1px solid var(--light-grey);
+        transition: all 0.2s ease;
+        word-wrap: break-word;
+        vertical-align: middle;
+    }
+
+    .flink-table tr:last-child td {
+        border-bottom: none;
+    }
+
+    /* 核心修复：表格行悬浮效果 */
+    /* 使用微弱的背景色变化，并确保文字颜色不会被覆盖 */
+    .flink-table tr:hover td {
+        background-color: rgba(0, 0, 0, 0.02) !important;
+    }
+    [data-theme='dark'] .flink-table tr:hover td {
+        background-color: rgba(255, 255, 255, 0.05) !important;
+    }
+
+    /* 名称列样式 */
+    .flink-name-cell {
+        width: 35%;
+    }
+    .flink-name-link {
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: var(--text-highlight-color);
+        text-decoration: none;
+        transition: color 0.2s;
+        display: block;
+        max-width: 100%;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+    .flink-name-link:hover {
+        color: var(--btn-bg);
+    }
+
+    /* 地址列样式 */
+    .flink-url-cell {
+        width: 65%;
+    }
+    .flink-url-link {
+        color: var(--font-color);
+        font-size: 0.9rem;
+        opacity: 0.6;
+        text-decoration: none;
+        transition: all 0.2s;
+        display: block;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+    .flink-url-link:hover {
+        opacity: 1;
+        color: var(--btn-bg);
+        padding-left: 5px;
+    }
+
+    @media (max-width: 768px) {
+        .flink-category-section {
+            padding: 15px;
+        }
+        .flink-name-cell { width: 45%; }
+        .flink-url-cell { width: 55%; }
+        .flink-table th, .flink-table td {
+            padding: 12px 15px;
+        }
+    }
+</style>
+<body>
+<div th:replace="~{template::loading}"></div>
+<div th:replace="~{template::background}"></div>
+<div th:replace="~{template::sidebar}"></div>
+<div th:replace="~{template::search}"></div>
+<div class="page" id="body-wrap">
+    <header class="not-home-page" id="page-header" th:style="'background-image: url(' + (${tenantConfig?.webInfo?.indexImg} ?: '/img/index_image.jpg') + ')'">
+        <nav th:replace="~{template::nav}" id="nav"></nav>
+        <div id="page-site-info">
+            <h1 id="site-title">网址收藏</h1>
+        </div>
+    </header>
+    <main class="layout" id="content-inner">
+        <div id="page">
+            <div id="article-container">
+                <div class="flink" th:if="${linksMap != null}">
+                    <div class="flink-category-section" th:each="entry : ${linksMap.entrySet()}">
+                        <h2 class="flink-category-title" th:text="${entry.key}">分类名称</h2>
+                        <div class="flink-table-wrapper">
+                            <table class="flink-table">
+                                <thead>
+                                    <tr>
+                                        <th class="flink-name-cell">名称</th>
+                                        <th class="flink-url-cell">地址</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="link : ${entry.value}">
+                                        <td class="flink-name-cell">
+                                            <a th:href="${link.url}" class="flink-name-link" th:text="${link.name}" th:title="${link.desc}" target="_blank">链接名称</a>
+                                        </td>
+                                        <td class="flink-url-cell">
+                                            <a th:href="${link.url}" class="flink-url-link" th:text="${link.url}" target="_blank">URL</a>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <div th:if="${linksMap == null or linksMap.isEmpty()}" style="text-align: center; padding: 50px;">
+                    <p>暂无收藏网址</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="aside-content" id="aside-content">
+            <div th:replace="~{template :: card_info}"></div>
+            <div th:replace="~{template :: card_announcement}"></div>
+            <div class="sticky_layout">
+                <div th:replace="~{template :: card_toc}"></div>
+            </div>
+        </div>
+    </main>
+    <footer th:replace="~{template::footer(null)}" id="footer"></footer>
+</div>
+<div th:replace="~{template::bottomscript}"></div>
+</body>
+</html>

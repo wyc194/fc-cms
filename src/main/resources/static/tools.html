@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>工具箱 - 归园田居</title>
+    <meta name="author" content="wyc">
+    <meta name="copyright" content="wyc">
+    <meta name="format-detection" content="telephone=no">
+    <meta name="theme-color" content="#ffffff">
+    <meta name="description" content="实用在线工具集，涵盖开发辅助、文本处理、图片转换等。">
+    <link rel="shortcut icon" href="/img/favicon.ico">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/normalize.css@8.0.1/normalize.min.css">
+    <link rel="stylesheet" href="/css/base.css">
+    <link rel="stylesheet" href="/css/layout.css">
+    <link rel="stylesheet" href="/css/tools.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.1/css/all.min.css">
+    <noscript>
+        <style type="text/css">
+            #nav { opacity: 1 }
+            .justified-gallery img { opacity: 1 }
+            #recent-posts time, #post-meta time { display: inline !important }
+        </style>
+    </noscript>
+    <script src="/js/config.js"></script>
+    <script src="/js/utils.js"></script>
+    <script src="/js/init.js"></script>
+</head>
+<body>
+<div class="page" id="body-wrap">
+    <main class="layout hide-aside" id="content-inner">
+        <div id="tool-page">
+            <div class="tool-layout">
+                <!-- 左侧广告位 -->
+                <aside class="tool-sidebar-ad left-ad" style="display: none;">
+                    <a href="https://cloud.tencent.com/act/cps/redirect?redirect=2446&cps_key=1e4338749e52ca51baba74f54cd8a65f&from=console" 
+                       target="_blank" rel="noopener" class="ad-link" title="【腾讯云】云服务器、云数据库、COS、CDN、短信等云产品特惠热卖中">
+                        <img src="img/180_360.png" alt="腾讯云广告" class="ad-img vertical">
+                    </a>
+                </aside>
+
+                <!-- 主体内容 -->
+                <div class="tool-main-content">
+                    <div class="tool-header-nav">
+                        <a href="/" class="tool-home-link">首页</a>
+                        <i class="fas fa-chevron-right tool-title-sep"></i>
+                        <h1>在线工具箱</h1>
+                        <p class="tool-description">免费、好用的开发者在线工具集合，涵盖开发、文本、图片等常用功能。</p>
+                    </div>
+
+                    <div class="tool-header-actions">
+                        <div class="tool-categories">
+                            <div class="tool-cat-item active" data-category="all">全部</div>
+                            <div class="tool-cat-item" data-category="dev">开发辅助</div>
+                            <div class="tool-cat-item" data-category="text">文本处理</div>
+                            <div class="tool-cat-item" data-category="image">图片工具</div>
+                            <div class="tool-cat-item" data-category="network">网络工具</div>
+                        </div>
+                        
+                        <div class="tool-search-section">
+                            <div class="tool-search-wrapper">
+                                <i class="fas fa-search tool-search-icon"></i>
+                                <input type="text" class="tool-search-input" placeholder="搜索工具，例如：JSON, Base64..." id="toolSearch">
+                                <i class="fas fa-times-circle tool-search-clear" id="clearSearch"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 顶部水平广告位 (仅在隐藏侧边栏时显示) -->
+                    <div class="tool-horizontal-ad ad-top" style="display: none;">
+                        <a href="https://cloud.tencent.com/act/cps/redirect?redirect=2446&cps_key=1e4338749e52ca51baba74f54cd8a65f&from=console" 
+                           target="_blank" rel="noopener" class="ad-link" title="【腾讯云】云服务器、云数据库、COS、CDN、短信等云产品特惠热卖中">
+                            <img src="img/980_120.png" alt="腾讯云广告" class="ad-img horizontal">
+                        </a>
+                    </div>
+
+                    <div class="tool-grid" id="toolGrid">
+                        <!-- JSON 格式化 -->
+                        <div class="item tool-dev" data-category="dev">
+                            <div class="light-window">
+                                <div class="light-mask"></div>
+                            </div>
+                            <a class="item-inner" href="/tools/json-format.html">
+                                <div class="item-hd">
+                                    <div class="item-icon">
+                                        <i class="fas fa-code"></i>
+                                    </div>
+                                    <div class="item-title">
+                                        <h3>JSON 格式化工具</h3>
+                                        <span class="item-category">开发辅助</span>
+                                        <span class="item-hot-tag">HOT</span>
+                                    </div>
+                                </div>
+                                <div class="item-bd">
+                                    <div class="item-desc">支持 JSON 校验、美化、压缩以及转 XML/YAML 等功能。</div>
+                                </div>
+                                <div class="item-ft">
+                                    <div class="item-link" title="freecity.club/tools/json-format.html">freecity.club/tools/json-format.html</div>
+                                    <div class="item-btn">立即进入</div>
+                                </div>
+                            </a>
+                        </div>
+
+                        <!-- Base64 -->
+                        <div class="item tool-dev" data-category="dev">
+                            <div class="light-window">
+                                <div class="light-mask"></div>
+                            </div>
+                            <a class="item-inner" href="/tools/base64.html">
+                                <div class="item-hd">
+                                    <div class="item-icon">
+                                        <i class="fas fa-exchange-alt"></i>
+                                    </div>
+                                    <div class="item-title">
+                                        <h3>Base64 编码转换</h3>
+                                        <span class="item-category">开发辅助</span>
+                                        <span class="item-hot-tag">HOT</span>
+                                    </div>
+                                </div>
+                                <div class="item-bd">
+                                    <div class="item-desc">文本与 Base64 编码之间的快速互相转换，支持文件转 Base64。</div>
+                                </div>
+                                <div class="item-ft">
+                                    <div class="item-link" title="freecity.club/tools/base64">freecity.club/tools/base64</div>
+                                    <div class="item-btn">立即进入</div>
+                                </div>
+                            </a>
+                        </div>
+
+                        <!-- Timestamp -->
+                        <div class="item tool-dev" data-category="dev">
+                            <div class="light-window">
+                                <div class="light-mask"></div>
+                            </div>
+                            <a class="item-inner" href="/tools/timestamp.html">
+                                <div class="item-hd">
+                                    <div class="item-icon">
+                                        <i class="fas fa-clock"></i>
+                                    </div>
+                                    <div class="item-title">
+                                        <h3>Unix 时间戳转换</h3>
+                                        <span class="item-category">开发辅助</span>
+                                        <span class="item-hot-tag">HOT</span>
+                                    </div>
+                                </div>
+                                <div class="item-bd">
+                                    <div class="item-desc">Unix 时间戳与北京时间之间的互相转换，支持多种格式。</div>
+                                </div>
+                                <div class="item-ft">
+                                    <div class="item-link" title="freecity.club/tools/timestamp">freecity.club/tools/timestamp</div>
+                                    <div class="item-btn">立即进入</div>
+                                </div>
+                            </a>
+                        </div>
+
+                        <!-- Regex -->
+                        <div class="item tool-dev" data-category="dev">
+                            <div class="light-window">
+                                <div class="light-mask"></div>
+                            </div>
+                            <a class="item-inner" href="/tools/regex.html">
+                                <div class="item-hd">
+                                    <div class="item-icon">
+                                        <i class="fas fa-terminal"></i>
+                                    </div>
+                                    <div class="item-title">
+                                        <h3>正则表达式测试</h3>
+                                        <span class="item-category">开发辅助</span>
+                                        <span class="item-hot-tag">HOT</span>
+                                    </div>
+                                </div>
+                                <div class="item-bd">
+                                    <div class="item-desc">在线编写和测试正则表达式，实时显示匹配结果。</div>
+                                </div>
+                                <div class="item-ft">
+                                    <div class="item-link" title="freecity.club/tools/regex.html">freecity.club/tools/regex.html</div>
+                                    <div class="item-btn">立即进入</div>
+                                </div>
+                            </a>
+                        </div>
+
+                        <!-- Diff -->
+                        <div class="item tool-text" data-category="text">
+                            <div class="light-window">
+                                <div class="light-mask"></div>
+                            </div>
+                            <a class="item-inner" href="/tools/diff.html">
+                                <div class="item-hd">
+                                    <div class="item-icon">
+                                        <i class="fas fa-columns"></i>
+                                    </div>
+                                    <div class="item-title">
+                                        <h3>文本对比工具</h3>
+                                        <span class="item-category">文本处理</span>
+                                        <span class="item-hot-tag">HOT</span>
+                                    </div>
+                                </div>
+                                <div class="item-bd">
+                                    <div class="item-desc">快速对比两段文本的差异，支持行对比和字符对比。</div>
+                                </div>
+                                <div class="item-ft">
+                                    <div class="item-link" title="freecity.club/tools/diff.html">freecity.club/tools/diff.html</div>
+                                    <div class="item-btn">立即进入</div>
+                                </div>
+                            </a>
+                        </div>
+
+                        <!-- Markdown -->
+                        <div class="item tool-text" data-category="text">
+                            <div class="light-window">
+                                <div class="light-mask"></div>
+                            </div>
+                            <a class="item-inner" href="/tools/markdown.html">
+                                <div class="item-hd">
+                                    <div class="item-icon">
+                                        <i class="fab fa-markdown"></i>
+                                    </div>
+                                    <div class="item-title">
+                                        <h3>Markdown 编辑器</h3>
+                                        <span class="item-category">文本处理</span>
+                                        <span class="item-hot-tag">HOT</span>
+                                    </div>
+                                </div>
+                                <div class="item-bd">
+                                    <div class="item-desc">支持实时预览的 Markdown 编辑器，可导出 HTML 或 PDF。</div>
+                                </div>
+                                <div class="item-ft">
+                                    <div class="item-link" title="freecity.club/tools/markdown.html">freecity.club/tools/markdown.html</div>
+                                    <div class="item-btn">立即进入</div>
+                                </div>
+                            </a>
+                        </div>
+
+                        <!-- Image Compress -->
+                        <div class="item tool-image" data-category="image">
+                            <div class="light-window">
+                                <div class="light-mask"></div>
+                            </div>
+                            <a class="item-inner" href="/tools/img-compress.html">
+                                <div class="item-hd">
+                                    <div class="item-icon">
+                                        <i class="fas fa-compress-arrows-alt"></i>
+                                    </div>
+                                    <div class="item-title">
+                                        <h3>图片在线压缩</h3>
+                                        <span class="item-category">图片工具</span>
+                                        <span class="item-hot-tag">HOT</span>
+                                    </div>
+                                </div>
+                                <div class="item-bd">
+                                    <div class="item-desc">在保证画质的前提下，智能压缩 PNG/JPG 图片体积。</div>
+                                </div>
+                                <div class="item-ft">
+                                    <div class="item-link" title="freecity.club/tools/img-compress.html">freecity.club/tools/img-compress.html</div>
+                                    <div class="item-btn">立即进入</div>
+                                </div>
+                            </a>
+                        </div>
+
+                        <!-- QR Code -->
+                        <div class="item tool-image" data-category="image">
+                            <div class="light-window">
+                                <div class="light-mask"></div>
+                            </div>
+                            <a class="item-inner" href="/tools/qr-code.html">
+                                <div class="item-hd">
+                                    <div class="item-icon">
+                                        <i class="fas fa-qrcode"></i>
+                                    </div>
+                                    <div class="item-title">
+                                        <h3>二维码生成器</h3>
+                                        <span class="item-category">图片工具</span>
+                                        <span class="item-hot-tag">HOT</span>
+                                    </div>
+                                </div>
+                                <div class="item-bd">
+                                    <div class="item-desc">将文字或链接生成二维码，支持自定义颜色 and Logo。</div>
+                                </div>
+                                <div class="item-ft">
+                                    <div class="item-link" title="freecity.club/tools/qr-code.html">freecity.club/tools/qr-code.html</div>
+                                    <div class="item-btn">立即进入</div>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- 底部水平广告位 (仅在隐藏侧边栏时显示) -->
+                    <div class="tool-horizontal-ad ad-bottom" style="display: none;">
+                        <a href="https://cloud.tencent.com/act/cps/redirect?redirect=2446&cps_key=1e4338749e52ca51baba74f54cd8a65f&from=console" 
+                           target="_blank" rel="noopener" class="ad-link" title="【腾讯云】云服务器、云数据库、COS、CDN、短信等云产品特惠热卖中">
+                            <img src="img/980_120.png" alt="腾讯云广告" class="ad-img horizontal">
+                        </a>
+                    </div>
+                </div>
+
+                <!-- 右侧广告位 -->
+                <aside class="tool-sidebar-ad right-ad" style="display: none;">
+                    <a href="https://cloud.tencent.com/act/cps/redirect?redirect=2446&cps_key=1e4338749e52ca51baba74f54cd8a65f&from=console" 
+                       target="_blank" rel="noopener" class="ad-link" title="【腾讯云】云服务器、云数据库、COS、CDN、短信等云产品特惠热卖中">
+                        <img src="img/180_360.png" alt="腾讯云广告" class="ad-img vertical">
+                    </a>
+                </aside>
+            </div>
+        </div>
+    </main>
+
+    <footer id="footer">
+        <div id="footer-wrap">
+            <div class="copyright">&copy;2016 - 2026 By wyc</div>
+            <div class="footer_custom_text">
+                <a target="_blank" rel="noopener" href="http://www.beian.gov.cn">豫ICP备2021148055号</a>
+            </div>
+        </div>
+    </footer>
+</div>
+
+<script src="/js/tw_cn.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/node-snackbar/dist/snackbar.min.js"></script>
+<script size="150" alpha='0.3' zIndex="-2" src="https://cdn.jsdelivr.net/npm/ribbon.js/dist/ribbon.min.js"></script>
+<script src="/js/click-heart.js"></script>
+
+<script>
+    // 搜索过滤逻辑
+    const searchInput = document.getElementById('toolSearch');
+    const clearBtn = document.getElementById('clearSearch');
+    const toolGrid = document.getElementById('toolGrid');
+    const toolCards = document.querySelectorAll('.item');
+    const catItems = document.querySelectorAll('.tool-cat-item');
+
+    // --- 工具使用频率统计与排序逻辑 ---
+    const STORAGE_KEY = 'tool_usage_stats';
+
+    // 记录点击
+    toolGrid.addEventListener('click', function(e) {
+        const itemInner = e.target.closest('.item-inner');
+        if (itemInner) {
+            const path = itemInner.getAttribute('href');
+            if (!path) return;
+            try {
+                // 统一路径格式，去掉域名，确保以 / 开头
+                const url = new URL(path, window.location.origin);
+                const normalizedPath = url.pathname;
+                
+                let stats = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+                stats[normalizedPath] = (stats[normalizedPath] || 0) + 1;
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(stats));
+            } catch (e) {
+                console.error('Failed to update tool usage stats:', e);
+            }
+        }
+    });
+
+    // 根据频率排序
+    function reorderToolsByUsage() {
+        let stats = {};
+        try {
+            stats = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+        } catch (e) {
+            return;
+        }
+        const cardsArray = Array.from(toolCards);
+
+        cardsArray.sort((a, b) => {
+            const hrefA = a.querySelector('.item-inner').getAttribute('href');
+            const hrefB = b.querySelector('.item-inner').getAttribute('href');
+            
+            // 同样需要规范化路径进行匹配
+            const pathA = new URL(hrefA, window.location.origin).pathname;
+            const pathB = new URL(hrefB, window.location.origin).pathname;
+            
+            const countA = stats[pathA] || 0;
+            const countB = stats[pathB] || 0;
+
+            if (countB === countA) {
+                return cardsArray.indexOf(a) - cardsArray.indexOf(b);
+            }
+            return countB - countA;
+        });
+
+        // 重新插入 DOM
+        cardsArray.forEach((card, index) => {
+            toolGrid.appendChild(card);
+            
+            // 标记前三名为 HOT (前提是点击次数 > 0)
+            const href = card.querySelector('.item-inner').getAttribute('href');
+            const path = new URL(href, window.location.origin).pathname;
+            const count = stats[path] || 0;
+            
+            if (index < 3 && count > 0) {
+                card.classList.add('is-hot');
+            } else {
+                card.classList.remove('is-hot');
+            }
+        });
+    }
+
+    // 初始化时执行排序
+    reorderToolsByUsage();
+    // ---------------------------------
+
+    // 监听输入显示/隐藏清除按钮
+    searchInput.addEventListener('input', function() {
+        toggleClearBtn();
+        filterTools();
+    });
+
+    // 点击清除按钮
+    clearBtn.addEventListener('click', function() {
+        searchInput.value = '';
+        toggleClearBtn();
+        filterTools();
+        searchInput.focus();
+    });
+
+    function toggleClearBtn() {
+        clearBtn.style.display = searchInput.value.length > 0 ? 'block' : 'none';
+    }
+
+    catItems.forEach(item => {
+        item.addEventListener('click', function() {
+            catItems.forEach(i => i.classList.remove('active'));
+            this.classList.add('active');
+            filterTools();
+        });
+    });
+
+    function filterTools() {
+        const query = searchInput.value.toLowerCase();
+        const activeCat = document.querySelector('.tool-cat-item.active').dataset.category;
+
+        toolCards.forEach(card => {
+            const title = card.querySelector('h3').textContent.toLowerCase();
+            const desc = card.querySelector('.item-desc').textContent.toLowerCase();
+            const category = card.dataset.category;
+
+            const matchesSearch = title.includes(query) || desc.includes(query);
+            const matchesCat = activeCat === 'all' || category === activeCat;
+
+            if (matchesSearch && matchesCat) {
+                card.style.display = 'flex';
+            } else {
+                card.style.display = 'none';
+            }
+        });
+    }
+</script>
+</body>
+</html>

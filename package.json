@@ -1,0 +1,14 @@
+{
+  "name": "fc-cms-static-builder",
+  "version": "1.0.0",
+  "description": "Static assets build script for fc-cms",
+  "main": "build.js",
+  "scripts": {
+    "build": "node build.js"
+  },
+  "devDependencies": {
+    "esbuild": "^0.20.0",
+    "html-minifier": "^4.0.0",
+    "glob": "^8.0.0"
+  }
+}

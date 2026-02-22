@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="light" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{template::common_head(${tenantConfig?.webInfo?.title ?: '归园田居 - 田园将芜胡不归'}, ${tenantConfig?.webInfo?.description ?: '个人技术博客和在线工具集'})}"></head>
+<body>
+<div th:replace="~{template::loading}"></div>
+<div th:replace="~{template::background}"></div>
+<div th:replace="~{template::sidebar}"></div>
+<div th:replace="~{template::search}"></div>
+<!-- 主体内容 -->
+<div class="page" id="body-wrap">
+    <!--  header  -->
+    <header class="full_page" id="page-header" th:style="|background-image: url(${tenantConfig?.webInfo?.indexImg ?: '/img/index_image.jpg'})|">
+        <nav th:replace="~{template::nav}" id="nav"></nav>
+        <div id="site-info">
+            <h1 id="site-title" th:text="${tenantConfig?.name ?: '归园田居'}">归园田居</h1>
+            <div id="site-subtitle">
+                <span id="subtitle" th:text="${tenantConfig?.webInfo?.description}"></span>
+            </div>
+            <div id="site_social_icons">
+                <a class="social-icon" th:href="${tenantConfig?.socialInfo?.github ?: 'https://github.com'}" target="_blank" title="Github">
+                    <i class="fab fa-github"></i>
+                </a>
+                <a class="social-icon" th:href="'mailto:' + ${tenantConfig?.socialInfo?.email ?: '110@163.com'}" target="_blank" title="Email">
+                    <i class="fas fa-envelope"></i>
+                </a>
+                <a class="social-icon" th:href="${tenantConfig?.socialInfo?.wechat ?: 'https://www.processon.com'}" target="_blank" title="Wechat">
+                    <i class="fab fa-weixin" th:if="${tenantConfig?.socialInfo?.wechat}"></i>
+                    <i class="fas fa-pencil-square" th:unless="${tenantConfig?.socialInfo?.wechat}"></i>
+                </a>
+            </div>
+        </div>
+        <div id="scroll-down">
+            <i class="fas fa-angle-down scroll-down-effects"></i>
+        </div>
+    </header>
+    <!--  main  -->
+    <main class="layout" id="content-inner">
+        <div class="recent-posts" id="recent-posts">
+            <!-- 最新文章列表 -->
+            <div class="recent-post-item" th:each="article,iterStat : ${articles.content}">
+                <div class="post_cover" th:classappend="${iterStat.odd} ? 'left_radius' : 'right_radius'">
+                    <a th:href="@{'/article/' + ${article.id}}" th:title="${article.title}">
+                        <img class="post_bg"
+                            th:src="${tenantConfig?.webInfo?.loadingImg ?: '/img/loading.gif'}"
+                            th:data-lazy-src="${article.thumbnail ?: (tenantConfig?.webInfo?.notFoundImg ?: '/img/404.jpg')}"
+                            th:data-not-found-img="${tenantConfig?.webInfo?.notFoundImg ?: '/img/404.jpg'}"
+                            onerror="this.onerror=null;this.src=this.getAttribute('data-not-found-img')"
+                            th:alt="${article.title}">
+                    </a>
+                </div>
+                <div class="recent-post-info">
+                    <a class="article-title" th:href="@{'/article/' + ${article.id}}" th:title="${article.title}" th:text="${article.title}"></a>
+                    <div class="article-meta-wrap">
+                        <span class="post-meta-date">
+                            <i class="far fa-calendar-alt"></i>
+                            <span class="article-meta-label">发表于</span>
+                            <time th:datetime="${article.createTime}" th:title="'发表于 ' + ${#temporals.format(article.createTime, 'yyyy-MM-dd HH:mm:ss')}"
+                                  th:text="${#temporals.format(article.createTime, 'yyyy-MM-dd')}"></time>
+                        </span>
+                        <span class="article-meta" th:if="${article.category != null}">
+                            <span class="article-meta__separator">|</span>
+                            <i class="fas fa-inbox"></i>
+                            <a class="article-meta__categories" th:href="@{'/category/' + ${article.category.id}}" th:text="${article.category.name}"></a>
+                        </span>
+                        <span class="article-meta">
+                            <span class="article-meta__separator">|</span>
+                            <i class="fas fa-comments"></i>
+                            <a th:href="@{'/article/' + ${article.id} + '#post-comment'}" itemprop="discussionUrl">
+                                <span th:text="${article.commentCount}"></span>
+                            </a>
+                            <span class="article-meta-label"> 条评论</span>
+                        </span>
+                    </div>
+                    <div class="content" th:text="${article.summary}"></div>
+                </div>
+            </div>
+            <nav id="pagination" th:if="${articles.totalPages > 1}">
+                <div class="pagination">
+                    <th:block th:with="baseUrl=${keyword != null ? '/search' : (category != null ? '/category/' + category.id : (tag != null ? '/tag/' + tag.id : '/'))}">
+                        <!-- 上一页 -->
+                        <a class="extend prev" rel="prev" th:if="${articles.hasPrevious()}" 
+                           th:href="@{${baseUrl}(keyword=${keyword}, page=${articles.number})}">
+                            <i class="fas fa-angle-left"></i>
+                        </a>
+                        <!-- 第一页 -->
+                        <a class="page-number" th:href="@{${baseUrl}(keyword=${keyword}, page=1)}" th:classappend="${articles.number == 0 ? 'current' : ''}">1</a>
+                        <!-- 左侧省略号 -->
+                        <span class="space" th:if="${articles.number > 2}">...</span>
+                        <!-- 中间页码 -->
+                        <th:block th:each="i : ${#numbers.sequence(2, articles.totalPages - 1)}" th:if="${articles.totalPages > 2}">
+                            <a class="page-number" th:if="${i >= articles.number and i <= articles.number + 2}"
+                               th:href="@{${baseUrl}(keyword=${keyword}, page=${i})}" th:text="${i}" th:classappend="${i == articles.number + 1 ? 'current' : ''}"></a>
+                        </th:block>
+                        <!-- 右侧省略号 -->
+                        <span class="space" th:if="${articles.number < articles.totalPages - 3}">...</span>
+                        <!-- 最后一页 -->
+                        <a class="page-number" th:if="${articles.totalPages > 1}" 
+                           th:href="@{${baseUrl}(keyword=${keyword}, page=${articles.totalPages})}" 
+                           th:text="${articles.totalPages}" th:classappend="${articles.number + 1 == articles.totalPages ? 'current' : ''}"></a>
+                        <!-- 下一页 -->
+                        <a class="extend next" rel="next" th:if="${articles.hasNext()}" 
+                           th:href="@{${baseUrl}(keyword=${keyword}, page=${articles.number + 2})}">
+                            <i class="fas fa-angle-right"></i>
+                        </a>
+                    </th:block>
+                </div>
+            </nav>
+        </div>
+        <div class="aside-content" id="aside-content">
+            <div th:replace="~{template :: card_info}"></div>
+            <div th:replace="~{template :: card_announcement}"></div>
+            <div class="sticky_layout">
+                <div th:replace="~{template :: card_recent_post}"></div>
+                <div th:replace="~{template :: card_categories}"></div>
+                <div th:replace="~{template :: card_archives}"></div>
+                <div th:replace="~{template :: card_webinfo}"></div>
+            </div>
+        </div>
+    </main>
+    <footer th:replace="~{template::footer(null)}"></footer>
+</div>
+<div th:replace="~{template::bottomscript}"></div>
+</body>
+</html>
