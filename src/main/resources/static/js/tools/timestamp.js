@@ -22,6 +22,36 @@ document.addEventListener('DOMContentLoaded', function() {
     let isPaused = false;
     let timerId = null;
 
+    // 本地缓存
+    const CACHE_KEY_DATE = 'tool.timestamp.inputDate';
+    const CACHE_KEY_TS = 'tool.timestamp.inputTimestamp';
+    const CACHE_KEY_TZ = 'tool.timestamp.timezone';
+    const loadCache = () => {
+        const get = (k) => (window.btf && window.btf.optLocal) ? window.btf.optLocal.get(k) : localStorage.getItem(k);
+        const tz = get(CACHE_KEY_TZ);
+        const d = get(CACHE_KEY_DATE);
+        const ts = get(CACHE_KEY_TS);
+        if (tz) try { globalTimezone.value = tz; } catch(e) {}
+        if (d) inputDate.value = typeof d === 'string' ? d : d;
+        if (ts) inputTimestamp.value = typeof ts === 'string' ? ts : ts;
+    };
+    const saveDate = () => {
+        const v = inputDate.value;
+        if (window.btf && window.btf.optLocal) window.btf.optLocal.set(CACHE_KEY_DATE, v, 180);
+        else localStorage.setItem(CACHE_KEY_DATE, v);
+    };
+    const saveTs = () => {
+        const v = inputTimestamp.value;
+        if (window.btf && window.btf.optLocal) window.btf.optLocal.set(CACHE_KEY_TS, v, 180);
+        else localStorage.setItem(CACHE_KEY_TS, v);
+    };
+    const saveTz = () => {
+        const v = globalTimezone.value;
+        if (window.btf && window.btf.optLocal) window.btf.optLocal.set(CACHE_KEY_TZ, v, 365);
+        else localStorage.setItem(CACHE_KEY_TZ, v);
+    };
+    loadCache();
+
     // 获取当前选择的时区
     function getSelectedTimezone() {
         return globalTimezone.value || dayjs.tz.guess();
@@ -62,6 +92,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // 时区切换
     globalTimezone.addEventListener('change', () => {
         updateCurrentTime();
+        saveTz();
         // 如果有输入值，尝试重新转换
         if (inputTimestamp.value) convertTsToDate();
         if (inputDate.value) convertDateToTs();
@@ -105,6 +136,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     btnTsToDate.addEventListener('click', convertTsToDate);
+    inputTimestamp.addEventListener('input', saveTs);
 
     // 日期转时间戳
     function convertDateToTs() {
@@ -131,6 +163,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     btnDateToTs.addEventListener('click', convertDateToTs);
+    inputDate.addEventListener('input', saveDate);
 
     // 辅助功能：回车触发
     inputTimestamp.addEventListener('keypress', (e) => {
@@ -140,8 +173,12 @@ document.addEventListener('DOMContentLoaded', function() {
         if (e.key === 'Enter') convertDateToTs();
     });
 
-    // 默认填充当前时间到输入框方便测试
-    const defaultTz = getSelectedTimezone();
-    inputDate.value = dayjs().tz(defaultTz).format('YYYY-MM-DD HH:mm:ss');
-    inputTimestamp.value = dayjs().valueOf();
+    // 默认填充当前时间到输入框方便测试（在无缓存时）
+    if (!inputDate.value || !inputTimestamp.value) {
+        const defaultTz = getSelectedTimezone();
+        inputDate.value = inputDate.value || dayjs().tz(defaultTz).format('YYYY-MM-DD HH:mm:ss');
+        inputTimestamp.value = inputTimestamp.value || dayjs().valueOf();
+        saveDate();
+        saveTs();
+    }
 });

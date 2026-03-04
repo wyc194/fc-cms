@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>二维码生成器 - 在线工具箱 - FreeCity</title>
+    <meta name="author" content="wyc">
+    <meta name="copyright" content="wyc">
+    <meta name="format-detection" content="telephone=no">
+    <meta name="theme-color" content="#ffffff">
+    <meta name="description" content="免费在线二维码生成器，支持自定义大小、颜色、纠错级别，支持多种格式下载。">
+    <link rel="shortcut icon" href="/img/favicon.ico">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/normalize.css@8.0.1/normalize.min.css">
+    <link rel="stylesheet" href="/css/base.css">
+    <link rel="stylesheet" href="/css/layout.css">
+    <link rel="stylesheet" href="/css/tools.css">
+    <link rel="stylesheet" href="/css/tools/tool-detail.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.1/css/all.min.css">
+    <noscript>
+        <style type="text/css">
+            #nav { opacity: 1 }
+            .justified-gallery img { opacity: 1 }
+            #recent-posts time, #post-meta time { display: inline !important }
+        </style>
+    </noscript>
+    <script src="/js/config.js"></script>
+    <script src="/js/utils.js"></script>
+    <script src="/js/init.js"></script>
+    <style>
+        .qr-preview-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            min-height: 300px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+        }
+        #qrCanvas {
+            max-width: 100%;
+            height: auto;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            background: #fff;
+            padding: 10px;
+            border-radius: 4px;
+        }
+        .qr-code-textarea {
+            min-height: 150px;
+        }
+        .settings-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            padding: 15px;
+            background: rgba(var(--text-highlight-color-rgb), 0.02);
+            border-radius: 8px;
+            margin-top: 15px;
+        }
+        .setting-item {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        .setting-item label {
+            font-size: 0.8rem;
+            font-weight: 600;
+            opacity: 0.7;
+        }
+        .setting-item input, .setting-item select {
+            padding: 8px;
+            border: 1px solid rgba(var(--text-highlight-color-rgb), 0.1);
+            border-radius: 6px;
+            font-size: 0.9rem;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+        .setting-item input:focus, .setting-item select:focus {
+            border-color: var(--text-highlight-color);
+        }
+        .color-input-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .color-input-wrapper input[type="color"] {
+            width: 40px;
+            height: 34px;
+            padding: 2px;
+            cursor: pointer;
+        }
+        .color-input-wrapper input[type="text"] {
+            flex: 1;
+        }
+    </style>
+</head>
+<body>
+<div class="page" id="body-wrap">
+    <main class="layout hide-aside" id="content-inner">
+        <div id="tool-page">
+            <div class="tool-layout">
+                <!-- 左侧广告位 -->
+                <aside class="tool-sidebar-ad left-ad" style="display: none;">
+                    <a href="https://cloud.tencent.com/act/cps/redirect?redirect=2446&cps_key=1e4338749e52ca51baba74f54cd8a65f&from=console" 
+                       target="_blank" rel="noopener" class="ad-link" title="【腾讯云】云服务器、云数据库、COS、CDN、短信等云产品特惠热卖中">
+                        <img src="https://qcloudimg.tencent-cloud.cn/raw/c6d28892f3e8f804792c00e620327f31.png" alt="腾讯云广告" class="ad-img vertical">
+                    </a>
+                </aside>
+
+                <!-- 主体内容 -->
+                <div class="tool-main-content">
+                    <div class="tool-detail-container">
+                    <div class="tool-header-nav tool-image">
+                        <a href="/" class="tool-home-link">首页</a>
+                        <i class="fas fa-chevron-right tool-title-sep"></i>
+                        <a href="/tools.html" class="tool-home-link">在线工具箱</a>
+                        <i class="fas fa-chevron-right tool-title-sep"></i>
+                        <h1>二维码生成器</h1>
+                        <span class="tool-tag">图片工具</span>
+                    </div>
+
+                        <!-- 工具工作区 -->
+                        <div class="tool-workspace">
+                            <div class="workspace-split">
+                                <!-- 输入区 -->
+                                <div class="editor-container">
+                                    <div class="editor-header">
+                                        <span class="editor-title">输入内容 (文本或 URL)</span>
+                                        <div class="editor-actions">
+                                            <button class="btn-icon-only" id="btnPaste" title="粘贴"><i class="fas fa-paste"></i></button>
+                                            <button class="btn-icon-only" id="btnClear" title="清空"><i class="fas fa-trash-alt"></i></button>
+                                        </div>
+                                    </div>
+                                    <textarea class="tool-textarea qr-code-textarea" id="qrInput" placeholder="在此输入要生成二维码的文字、网址等内容..."></textarea>
+                                    
+                                    <div class="settings-grid">
+                                        <div class="setting-item">
+                                            <label>尺寸 (px)</label>
+                                            <input type="number" id="qrSize" value="300" min="100" max="2000" step="50">
+                                        </div>
+                                        <div class="setting-item">
+                                            <label>纠错级别</label>
+                                            <select id="qrErrorLevel">
+                                                <option value="L">L (低 - 7%)</option>
+                                                <option value="M" selected>M (中 - 15%)</option>
+                                                <option value="Q">Q (高 - 25%)</option>
+                                                <option value="H">H (极高 - 30%)</option>
+                                            </select>
+                                        </div>
+                                        <div class="setting-item">
+                                            <label>前景色</label>
+                                            <div class="color-input-wrapper">
+                                                <input type="color" id="qrColorDark" value="#000000">
+                                                <input type="text" id="qrColorDarkHex" value="#000000">
+                                            </div>
+                                        </div>
+                                        <div class="setting-item">
+                                            <label>背景色</label>
+                                            <div class="color-input-wrapper">
+                                                <input type="color" id="qrColorLight" value="#ffffff">
+                                                <input type="text" id="qrColorLightHex" value="#ffffff">
+                                            </div>
+                                        </div>
+                                        <div class="setting-item">
+                                            <label>边距 (Margin)</label>
+                                            <input type="number" id="qrMargin" value="2" min="0" max="10">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- 输出区 -->
+                                <div class="editor-container">
+                                    <div class="editor-header">
+                                        <span class="editor-title">预览</span>
+                                        <div class="editor-actions">
+                                            <button class="btn-icon-only" id="btnCopy" title="复制图片 (需浏览器支持)" style="display:none;"><i class="fas fa-copy"></i></button>
+                                            <button class="btn-icon-only" id="btnDownload" title="保存为图片"><i class="fas fa-download"></i></button>
+                                        </div>
+                                    </div>
+                                    <div class="qr-preview-container">
+                                        <canvas id="qrCanvas"></canvas>
+                                        <div id="qrPlaceholder" style="display: none; color: #999; text-align: center;">
+                                            <i class="fas fa-qrcode" style="font-size: 4rem; margin-bottom: 1rem; opacity: 0.2;"></i>
+                                            <p>输入内容后自动生成</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 控制面板 -->
+                            <div class="tool-controls">
+                                <button class="btn-tool primary" id="btnGenerate"><i class="fas fa-sync-alt"></i> 重新生成</button>
+                                <button class="btn-tool" id="btnSample"><i class="fas fa-vial"></i> 示例网址</button>
+                            </div>
+                        </div>
+
+                        <!-- 工具介绍 -->
+                        <section class="tool-info-section">
+                            <h2>关于二维码生成器</h2>
+                            <div class="tool-info-content">
+                                <p>二维码 (Quick Response Code) 是一种矩阵二维码，能够快速被智能手机等设备扫描识别。</p>
+                                <p>本工具提供以下核心功能：</p>
+                                <ul>
+                                    <li><strong>实时生成：</strong>在您输入内容或修改参数时，实时更新预览效果。</li>
+                                    <li><strong>高度自定义：</strong>支持调整尺寸、颜色、边距以及纠错级别。</li>
+                                    <li><strong>纠错能力：</strong>纠错级别越高，二维码在被遮挡或损坏时仍能被识别的可能性越大。</li>
+                                    <li><strong>离线安全：</strong>所有操作均在浏览器本地完成，保护您的隐私。</li>
+                                </ul>
+                            </div>
+                        </section>
+                    </div>
+                </div>
+
+                <!-- 右侧广告位 -->
+                <aside class="tool-sidebar-ad right-ad" style="display: none;">
+                    <a href="https://cloud.tencent.com/act/cps/redirect?redirect=2446&cps_key=1e4338749e52ca51baba74f54cd8a65f&from=console" 
+                       target="_blank" rel="noopener" class="ad-link" title="【腾讯云】云服务器、云数据库、COS、CDN、短信等云产品特惠热卖中">
+                        <img src="https://qcloudimg.tencent-cloud.cn/raw/c6d28892f3e8f804792c00e620327f31.png" alt="腾讯云广告" class="ad-img vertical">
+                    </a>
+                </aside>
+            </div>
+        </div>
+    </main>
+
+    <footer id="footer">
+        <div id="footer-wrap">
+            <div class="copyright">&copy;2016 - 2027 BY WYC</div>
+            <div class="footer_custom_text">
+                <a target="_blank" rel="noopener" href="http://beian.miit.gov.cn" th:text="${tenantConfig.webInfo.icp}">豫ICP备2021148055号</a>
+                <a href="https://beian.mps.gov.cn/#/query/webSearch?code=31011402021790" target="_blank" rel="nofollow" hotrep="hp.footer.bottom.beian" style="margin-left: 6px;">
+                    <img src="/img/gaba.avif" style="width: 14px; margin-right: 5px;">
+                    <span>沪公网安备31011402021790号</span>
+                </a>
+            </div>
+        </div>
+    </footer>
+</div>
+
+<script src="/js/tw_cn.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcode@1.4.4/build/qrcode.min.js"></script>
+<script src="/js/tools/qr-code.js"></script>
+</body>
+</html>

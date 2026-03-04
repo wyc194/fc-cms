@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Markdown 编辑器 - 在线工具箱 - FreeCity</title>
+    <meta name="author" content="wyc">
+    <meta name="theme-color" content="#ffffff">
+    <meta name="description" content="支持实时预览的 Markdown 编辑器，安全渲染，可导出 HTML。">
+    <link rel="shortcut icon" href="/img/favicon.ico">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/normalize.css@8.0.1/normalize.min.css">
+    <link rel="stylesheet" href="/css/base.css">
+    <link rel="stylesheet" href="/css/layout.css">
+    <link rel="stylesheet" href="/css/tools.css">
+    <link rel="stylesheet" href="/css/tools/tool-detail.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.1/css/all.min.css">
+    <script src="/js/config.js"></script>
+    <script src="/js/utils.js"></script>
+    <script src="/js/init.js"></script>
+    <style>
+        :root {
+            --md-border: #e0e0e0;
+            --md-bg: #f8f9fa;
+            --md-primary: #49b1f5;
+            --mono: 'JetBrains Mono','Fira Code',Consolas,Monaco,monospace;
+        }
+        .tool-workspace { display: flex; flex-direction: column; gap: 12px }
+        .md-controls { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; background: #fff; border: 1px solid var(--md-border); border-radius: 8px; padding: 8px 10px }
+        .md-controls .group { display: flex; gap: 6px; align-items: center }
+        .select { border: 1px solid var(--md-border); border-radius: 6px; padding: 6px 10px; background: #fff; font-size: 0.85rem; color: #333; transition: all .2s }
+        .select:focus { outline: none; border-color: var(--md-primary); box-shadow: 0 0 0 3px rgba(73,177,245,.12) }
+        .btn { background: var(--md-primary); color: #fff; border: 1px solid var(--md-primary); padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 0.85rem; transition: all .2s }
+        .btn:hover { filter: brightness(1.05); transform: translateY(-1px); box-shadow: 0 3px 8px rgba(73,177,245,.25) }
+        .btn-ghost { background: #fff; color: #4a4a4a; border: 1px solid var(--md-border); padding: 6px 12px; border-radius: 6px; transition: all .2s }
+        .btn-ghost:hover { color: var(--md-primary); border-color: var(--md-primary); transform: translateY(-1px); box-shadow: 0 2px 6px rgba(0,0,0,.06) }
+        .workspace-split { display: grid; grid-template-columns: 1fr 1fr; gap: 12px }
+        .workspace-split.single { grid-template-columns: 1fr; }
+        @media (max-width: 900px) { .workspace-split { grid-template-columns: 1fr } }
+        .editor-container { display: flex; flex-direction: column; border: 1px solid var(--md-border); border-radius: 6px; background: #fff; overflow: hidden }
+        .editor-header { display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; background: linear-gradient(0deg, #f7f9fb, #fbfdff); border-bottom: 1px solid var(--md-border) }
+        .editor-title { font-size: 0.9rem; color: #343a40 }
+        .editor-actions { display: flex; gap: 8px }
+        .editor-container { height: 530px }
+        .editor-area { height: calc(100% - 44px); min-height: 300px; width: 100%; box-sizing: border-box; resize: none; border: none; outline: none; padding: 12px; font-family: var(--mono); font-size: 14px; line-height: 1.6; overflow: auto }
+        .preview-area { height: calc(100% - 44px); min-height: 300px; padding: 12px; overflow: auto }
+        .hidden { display: none }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/marked@4/marked.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dompurify@3.0.6/dist/purify.min.js"></script>
+</head>
+<body>
+<div class="page" id="body-wrap">
+    <main class="layout hide-aside" id="content-inner">
+        <div id="tool-page">
+            <div class="tool-layout">
+                <div class="tool-main-content">
+                    <div class="tool-detail-container">
+                        <div class="tool-header-nav tool-text">
+                            <a href="/" class="tool-home-link">首页</a>
+                            <i class="fas fa-chevron-right tool-title-sep"></i>
+                            <a href="/tools.html" class="tool-home-link">在线工具箱</a>
+                            <i class="fas fa-chevron-right tool-title-sep"></i>
+                            <h1>Markdown 编辑器</h1>
+                            <span class="tool-tag">文本处理</span>
+                        </div>
+                        <div class="tool-workspace">
+                            <div class="md-controls">
+                                <div class="group">
+                                    <label>视图</label>
+                                    <select id="mdViewMode" class="select">
+                                        <option value="split" selected>左右分栏</option>
+                                        <option value="edit">仅编辑</option>
+                                        <option value="preview">仅预览</option>
+                                    </select>
+                                </div>
+                                <div class="group">
+                                    <button class="btn-ghost" id="btnSample"><i class="fas fa-vial"></i> 示例</button>
+                                    <button class="btn-ghost" id="btnPaste"><i class="fas fa-paste"></i> 粘贴</button>
+                                    <button class="btn-ghost" id="btnClear"><i class="fas fa-trash-alt"></i> 清空</button>
+                                </div>
+                                <div class="group">
+                                    <button class="btn" id="btnCopyHtml"><i class="fas fa-copy"></i> 复制 HTML</button>
+                                    <button class="btn" id="btnDownloadHtml"><i class="fas fa-download"></i> 另存 HTML</button>
+                                </div>
+                            </div>
+                            <div class="workspace-split" id="mdWorkspace">
+                                <div class="editor-container" id="editorBox">
+                                    <div class="editor-header">
+                                        <span class="editor-title">Markdown</span>
+                                        <div class="editor-actions"></div>
+                                    </div>
+                                    <textarea id="mdInput" class="editor-area" placeholder="在此输入或粘贴 Markdown 内容"></textarea>
+                                </div>
+                                <div class="editor-container" id="previewBox">
+                                    <div class="editor-header">
+                                        <span class="editor-title">预览</span>
+                                        <div class="editor-actions"></div>
+                                    </div>
+                                    <div id="mdPreview" class="preview-area"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <section class="tool-info-section">
+                            <h2>Markdown 速查</h2>
+                            <div class="tool-info-content">
+                                <ul>
+                                    <li>标题：# H1、## H2、### H3 ...</li>
+                                    <li>加粗：**bold**；斜体：*italic*</li>
+                                    <li>行内代码：`code`；代码块：```lang ... ```</li>
+                                    <li>链接：[text](https://example.com)；图片：![alt](url)</li>
+                                    <li>列表：- item；数字列表：1. item</li>
+                                    <li>引用：> 引用内容</li>
+                                    <li>表格：| A | B | + 分隔线与行</li>
+                                    <li>水平线：--- 或 ***</li>
+                                </ul>
+                            </div>
+                        </section>
+                        <section class="tool-info-section">
+                            <h2>使用说明</h2>
+                            <div class="tool-info-content">
+                                <ul>
+                                    <li>左侧输入 Markdown，右侧实时预览。</li>
+                                    <li>视图选择支持“左右分栏”、“仅编辑”、“仅预览”。</li>
+                                    <li>复制/另存为会导出已安全过滤后的 HTML。</li>
+                                    <li>输入内容与视图模式会自动保存到本地缓存。</li>
+                                </ul>
+                            </div>
+                        </section>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    <footer id="footer">
+        <div id="footer-wrap">
+            <div class="copyright">&copy;2016 - 2027 By WYC</div>
+            <div class="footer_custom_text">
+                <a target="_blank" rel="noopener" href="http://beian.miit.gov.cn" th:text="${tenantConfig.webInfo.icp}">豫ICP备2021148055号</a>
+                <a href="https://beian.mps.gov.cn/#/query/webSearch?code=31011402021790" target="_blank" rel="nofollow" hotrep="hp.footer.bottom.beian" style="margin-left: 6px;">
+                    <img src="/img/gaba.avif" style="width: 14px; margin-right: 5px;">
+                    <span>沪公网安备31011402021790号</span>
+                </a>
+            </div>
+        </div>
+    </footer>
+</div>
+<script src="/js/tw_cn.js"></script>
+<script src="/js/tools/markdown.js"></script>
+</body>
+</html>

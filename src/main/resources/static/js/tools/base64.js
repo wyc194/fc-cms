@@ -14,6 +14,21 @@ document.addEventListener('DOMContentLoaded', function() {
     const btnDownload = document.getElementById('btnDownload');
     const chkSplit = document.getElementById('chkSplit');
 
+    // 本地缓存
+    const CACHE_KEY = 'tool.base64.input';
+    const saved = (window.btf && window.btf.optLocal) ? window.btf.optLocal.get(CACHE_KEY) : localStorage.getItem(CACHE_KEY);
+    if (saved) {
+        try {
+            inputArea.value = typeof saved === 'string' ? saved : saved;
+        } catch (e) {}
+    }
+    const saveCache = () => {
+        const val = inputArea.value;
+        if (window.btf && window.btf.optLocal) window.btf.optLocal.set(CACHE_KEY, val, 365);
+        else localStorage.setItem(CACHE_KEY, val);
+    };
+    inputArea.addEventListener('input', saveCache);
+
     // 工具函数：UTF-8 转 Base64
     function utf8_to_b64(str) {
         return window.btoa(unescape(encodeURIComponent(str)));
@@ -128,6 +143,7 @@ document.addEventListener('DOMContentLoaded', function() {
         try {
             const text = await navigator.clipboard.readText();
             inputArea.value = text;
+            saveCache();
         } catch (err) {
             console.error('无法读取剪贴板内容', err);
             inputArea.focus();
@@ -140,6 +156,7 @@ document.addEventListener('DOMContentLoaded', function() {
         inputArea.value = '';
         outputArea.value = '';
         inputArea.focus();
+        localStorage.removeItem(CACHE_KEY);
     });
 
     // 复制结果

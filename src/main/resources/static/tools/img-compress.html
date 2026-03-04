@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>图片在线压缩 - 在线工具箱 - FreeCity</title>
+    <meta name="author" content="wyc">
+    <meta name="theme-color" content="#ffffff">
+    <meta name="description" content="本地压缩 JPG/PNG/WebP 图片，支持质量调整、尺寸缩放与批量下载。">
+    <link rel="shortcut icon" href="/img/favicon.ico">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/normalize.css@8.0.1/normalize.min.css">
+    <link rel="stylesheet" href="/css/base.css">
+    <link rel="stylesheet" href="/css/layout.css">
+    <link rel="stylesheet" href="/css/tools.css">
+    <link rel="stylesheet" href="/css/tools/tool-detail.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.1/css/all.min.css">
+    <script src="/js/config.js"></script>
+    <script src="/js/utils.js"></script>
+    <script src="/js/init.js"></script>
+    <style>
+        :root {
+            --img-border: #e0e0e0;
+            --img-bg: #f8f9fa;
+            --img-primary: #49b1f5;
+        }
+        .tool-workspace { display: flex; flex-direction: column; gap: 12px }
+        .controls { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; background: #fff; border: 1px solid var(--img-border); border-radius: 8px; padding: 8px 10px }
+        .group { display: flex; gap: 8px; align-items: center }
+        .select, .input, .range { border: 1px solid var(--img-border); border-radius: 6px; padding: 6px 10px; background: #fff; font-size: 0.85rem; color: #333 }
+        .select { -webkit-appearance: none; appearance: none; height: 32px; line-height: 20px; padding: 4px 10px }
+        .range { width: 180px; box-sizing: border-box; height: 32px; margin: 0; -webkit-appearance: none; appearance: none; background: transparent }
+        .range::-webkit-slider-runnable-track { height: 4px; background: #e0e0e0; border-radius: 2px }
+        .range:focus::-webkit-slider-runnable-track { background: #cfd4da }
+        .range::-webkit-slider-thumb { -webkit-appearance: none; width: 14px; height: 14px; background: var(--img-primary); border-radius: 50%; margin-top: -5px }
+        .range::-moz-range-track { height: 4px; background: #e0e0e0; border-radius: 2px }
+        .range::-moz-range-thumb { width: 14px; height: 14px; background: var(--img-primary); border: none; border-radius: 50% }
+        #qualityLabel { min-width: 44px; display: inline-block; }
+        .btn { background: var(--img-primary); color: #fff; border: 1px solid var(--img-primary); padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 0.85rem }
+        .btn-ghost { background: #fff; color: #4a4a4a; border: 1px solid var(--img-border); padding: 6px 12px; border-radius: 6px }
+        .group.group-actions { margin-left: auto }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px }
+        @media (max-width: 900px) { .grid { grid-template-columns: 1fr } }
+        .panel { border: 1px solid var(--img-border); border-radius: 6px; background: #fff; overflow: hidden }
+        .panel-head { display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; background: var(--img-bg); border-bottom: 1px solid var(--img-border); font-size: 0.9rem }
+        .panel-body { padding: 12px; }
+        .dropzone { display: flex; align-items: center; justify-content: center; border: 2px dashed var(--img-border); border-radius: 8px; height: 200px; color: #666; background: #fbfbfb }
+        .file-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 10px }
+        .file-card { border: 1px solid var(--img-border); border-radius: 6px; overflow: hidden; background: #fff }
+        .file-card .thumb { height: 140px; display: flex; align-items: center; justify-content: center; background: #fafafa }
+        .file-card .thumb img { max-width: 100%; max-height: 100%; object-fit: contain; cursor: zoom-in }
+        .file-card .meta { padding: 8px 10px; font-size: 0.8rem; color: #555; display: flex; align-items: center; justify-content: space-between; gap: 8px; line-height: 1.4 }
+        .file-card .meta .name { flex: 1 1 auto; white-space: nowrap; overflow: hidden; text-overflow: ellipsis }
+        .file-card .meta .size { flex: 0 0 auto; white-space: nowrap; color: #888 }
+        .file-card .actions { display: flex; gap: 8px; padding: 8px 10px; border-top: 1px solid var(--img-border) }
+        .stat { font-size: 0.8rem; color: #888 }
+        .img-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.8); display: none; align-items: center; justify-content: center; z-index: 1000 }
+        .img-modal .modal-inner { position: relative; max-width: 90vw; max-height: 90vh; display: flex; flex-direction: column; align-items: center }
+        .img-modal img { max-width: 90vw; max-height: 85vh; border-radius: 6px; box-shadow: 0 10px 30px rgba(0,0,0,0.5) }
+        .img-modal .caption { margin-top: 8px; color: #ccc; font-size: 0.85rem }
+        .img-modal .close { position: absolute; top: -10px; right: -10px; background: #fff; border: none; border-radius: 50%; width: 28px; height: 28px; cursor: pointer; font-weight: bold; }
+    </style>
+</head>
+<body>
+<div class="page" id="body-wrap">
+    <main class="layout hide-aside" id="content-inner">
+        <div id="tool-page">
+            <div class="tool-layout">
+                <div class="tool-main-content">
+                    <div class="tool-detail-container">
+                        <div class="tool-header-nav tool-image">
+                            <a href="/" class="tool-home-link">首页</a>
+                            <i class="fas fa-chevron-right tool-title-sep"></i>
+                            <a href="/tools.html" class="tool-home-link">在线工具箱</a>
+                            <i class="fas fa-chevron-right tool-title-sep"></i>
+                            <h1>图片在线压缩</h1>
+                            <span class="tool-tag">图片工具</span>
+                        </div>
+                        <div class="tool-workspace">
+                            <div class="controls">
+                                <input id="fileInput" type="file" accept="image/*" multiple style="display:none">
+                                <div class="group">
+                                    <label>质量</label>
+                                    <input id="quality" type="range" class="range" min="0" max="100" step="1" value="80">
+                                    <span id="qualityLabel" class="stat">80%</span>
+                                </div>
+                                <div class="group">
+                                    <label>宽度(%)</label>
+                                    <input id="targetWidthPct" type="number" class="input" placeholder="0-100" min="0" max="100" value="100" style="width:100px">
+                                </div>
+                                <div class="group">
+                                    <label>格式</label>
+                                    <select id="targetFormat" class="select">
+                                        <option value="image/jpeg">JPEG</option>
+                                        <option value="image/webp">WebP</option>
+                                        <option value="image/png">PNG</option>
+                                    </select>
+                                </div>
+                                <div class="group group-actions">
+                                    <button id="btnCompressAll" class="btn-ghost"><i class="fas fa-compress"></i> 全部压缩</button>
+                                    <button id="btnDownloadAll" class="btn-ghost"><i class="fas fa-download"></i> 批量下载</button>
+                                </div>
+                            </div>
+                            <div class="grid">
+                                <div class="panel">
+                                    <div class="panel-head">
+                                        <span>待处理文件</span>
+                                        <span class="stat" id="statInput">0张</span>
+                                    </div>
+                                    <div class="panel-body">
+                                        <div id="dropzone" class="dropzone">拖拽图片到此或点击此区域选择图片</div>
+                                        <div id="inputList" class="file-list"></div>
+                                    </div>
+                                </div>
+                                <div class="panel">
+                                    <div class="panel-head">
+                                        <span>压缩结果</span>
+                                        <span class="stat" id="statOutput">0张</span>
+                                    </div>
+                                    <div class="panel-body">
+                                        <div id="outputList" class="file-list"></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <section class="tool-info-section">
+                                <h2>使用说明</h2>
+                                <div class="tool-info-content">
+                                    <ul>
+                                        <li>所有压缩在本地浏览器中完成，不会上传到服务器。</li>
+                                        <li>质量越低体积越小，建议在 60%~85% 之间权衡画质与体积。</li>
+                                        <li>宽度按百分比缩放，范围 0–100，默认 100%（高度自动等比）。</li>
+                                        <li>批量下载会分别保存每张压缩后的图片。</li>
+                                    </ul>
+                                </div>
+                            </section>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    <div id="imgModal" class="img-modal">
+        <div class="modal-inner">
+            <img id="imgModalImg" alt="Preview">
+            <div id="imgModalCaption" class="caption"></div>
+            <button id="imgModalClose" class="close">×</button>
+        </div>
+    </div>
+    <footer id="footer">
+        <div id="footer-wrap">
+            <div class="copyright">&copy;2016 - 2027 By WYC</div>
+            <div class="footer_custom_text">
+                <a target="_blank" rel="noopener" href="http://beian.miit.gov.cn" th:text="${tenantConfig.webInfo.icp}">豫ICP备2021148055号</a>
+                <a href="https://beian.mps.gov.cn/#/query/webSearch?code=31011402021790" target="_blank" rel="nofollow" hotrep="hp.footer.bottom.beian" style="margin-left: 6px;">
+                    <img src="/img/gaba.avif" style="width: 14px; margin-right: 5px;">
+                    <span>沪公网安备31011402021790号</span>
+                </a>
+            </div>
+        </div>
+    </footer>
+</div>
+<script src="/js/tw_cn.js"></script>
+<script src="/js/tools/img-compress.js"></script>
+</body>
+</html>

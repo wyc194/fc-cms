@@ -9,8 +9,13 @@ services:
       - SPRING_DATASOURCE_URL=${DB_URL:-jdbc:mysql://host.docker.internal:3306/fc_cms?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true}
       - SPRING_DATASOURCE_USERNAME=${DB_USERNAME:-root}
       - SPRING_DATASOURCE_PASSWORD=${DB_PASSWORD:-password}
-      - APP_JWT_SECRET=${APP_JWT_SECRET:-your_jwt_secret_here}
-      - APP_CORS_ALLOWED_ORIGINS=${APP_CORS_ALLOWED_ORIGINS:-https://yourdomain.com}
+      - APP_JWT_SECRET=${APP_JWT_SECRET:-jwt_secret}
+      - APP_CORS_ALLOWED_ORIGINS=${APP_CORS_ALLOWED_ORIGINS:-https://freecity.club}
+      # 邮件服务环境变量
+      - APP_MAIL_HOST=${APP_MAIL_HOST:-}
+      - APP_MAIL_PORT=${APP_MAIL_PORT:-}
+      - APP_MAIL_USERNAME=${APP_MAIL_USERNAME:-}
+      - APP_MAIL_PASSWORD=${APP_MAIL_PASSWORD:-}
     extra_hosts:
       - "host.docker.internal:host-gateway"
     volumes:

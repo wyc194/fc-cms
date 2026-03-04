@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>文本对比工具 - 在线工具箱 - FreeCity</title>
+    <meta name="author" content="wyc">
+    <meta name="theme-color" content="#ffffff">
+    <meta name="description" content="在线文本差异对比工具，支持行对比与字符对比，忽略大小写与空白选项。">
+    <link rel="shortcut icon" href="/img/favicon.ico">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/normalize.css@8.0.1/normalize.min.css">
+    <link rel="stylesheet" href="/css/base.css">
+    <link rel="stylesheet" href="/css/layout.css">
+    <link rel="stylesheet" href="/css/tools.css">
+    <link rel="stylesheet" href="/css/tools/tool-detail.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.1/css/all.min.css">
+    <script src="/js/config.js"></script>
+    <script src="/js/utils.js"></script>
+    <script src="/js/init.js"></script>
+    <style>
+        :root {
+            --diff-border: #e0e0e0;
+            --diff-bg: #f8f9fa;
+            --diff-primary: #49b1f5;
+            --diff-text: #343a40;
+            --diff-muted: #6c757d;
+            --diff-add-bg: #d1e7dd;
+            --diff-add-border: #a3cfbb;
+            --diff-del-bg: #f8d7da;
+            --diff-del-border: #f5c2c7;
+            --diff-change-bg: #fff3cd;
+            --diff-change-border: #ffe69c;
+            --mono: 'JetBrains Mono','Fira Code',Consolas,Monaco,monospace;
+        }
+        .tool-workspace { display: flex; flex-direction: column; gap: 12px }
+        .diff-controls { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; background: #fff; border: 1px solid var(--diff-border); border-radius: 6px; padding: 8px 12px; }
+        .radio-group, .check-group { display: flex; gap: 12px; align-items: center; font-size: 0.9rem; color: var(--diff-muted) }
+        .diff-editors { display: grid; grid-template-columns: 1fr 1fr; gap: 12px }
+        @media (max-width: 900px) { .diff-editors { grid-template-columns: 1fr } }
+        .editor-box { border: 1px solid var(--diff-border); border-radius: 6px; background: #fff; overflow: hidden; display: flex; flex-direction: column }
+        .editor-head { display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; background: var(--diff-bg); border-bottom: 1px solid var(--diff-border); font-size: 0.9rem; color: var(--diff-text) }
+        .editor-actions { display: flex; gap: 8px }
+        .btn-mini { background: transparent; border: 1px solid transparent; color: var(--diff-muted); cursor: pointer; padding: 4px 8px; border-radius: 4px; font-size: 0.85rem; transition: all 0.2s; display: inline-flex; align-items: center; gap: 6px }
+        .btn-mini:hover { background: var(--diff-bg); color: var(--diff-text); border-color: #e9ecef }
+        .editor-area { min-height: 220px; resize: vertical; border: none; outline: none; padding: 12px; font-family: var(--mono); font-size: 14px; line-height: 1.6 }
+        .result-box { border: 1px solid var(--diff-border); border-radius: 6px; background: #fff; overflow: hidden; display: flex; flex-direction: column }
+        .result-head { display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; background: var(--diff-bg); border-bottom: 1px solid var(--diff-border); font-size: 0.9rem; color: var(--diff-text) }
+        .result-content { display: grid; grid-template-columns: 1fr 1fr; gap: 0; }
+        @media (max-width: 900px) { .result-content { grid-template-columns: 1fr } }
+        .result-pane { padding: 12px; font-family: var(--mono); font-size: 14px; line-height: 1.6; border-right: 1px solid var(--diff-border) }
+        .result-pane:last-child { border-right: none }
+        .line { white-space: pre-wrap; word-break: break-word; padding: 2px 4px; border-left: 3px solid transparent }
+        .line.equal { background: transparent }
+        .line.add { background: var(--diff-add-bg); border-left-color: var(--diff-add-border) }
+        .line.del { background: var(--diff-del-bg); border-left-color: var(--diff-del-border) }
+        .line.change { background: var(--diff-change-bg); border-left-color: var(--diff-change-border) }
+        .chunk-add { background: var(--diff-add-bg); border-bottom: 1px solid var(--diff-add-border) }
+        .chunk-del { background: var(--diff-del-bg); text-decoration: line-through }
+        .stats { font-size: 0.8rem; color: var(--diff-muted) }
+        .copy-group { display: flex; gap: 8px; align-items: center }
+        .btn-primary { background: var(--diff-primary); color: #fff; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer; font-size: 0.85rem }
+        .btn-primary:hover { filter: brightness(1.05) }
+        .select { border: 1px solid var(--diff-border); border-radius: 4px; padding: 2px 6px; background: #fff; font-size: 0.8rem; line-height: 1.2 }
+        .inline-toggle { display: flex; gap: 6px; align-items: center; font-size: 0.8rem }
+        .inline-toggle label { font-weight: 400; color: var(--diff-muted) }
+    </style>
+</head>
+<body>
+<div class="page" id="body-wrap">
+    <main class="layout hide-aside" id="content-inner">
+        <div id="tool-page">
+            <div class="tool-layout">
+                <div class="tool-main-content">
+                    <div class="tool-detail-container">
+                        <div class="tool-header-nav tool-text">
+                            <a href="/" class="tool-home-link">首页</a>
+                            <i class="fas fa-chevron-right tool-title-sep"></i>
+                            <a href="/tools.html" class="tool-home-link">在线工具箱</a>
+                            <i class="fas fa-chevron-right tool-title-sep"></i>
+                            <h1>文本对比工具</h1>
+                            <span class="tool-tag">文本处理</span>
+                        </div>
+                        <div class="tool-workspace">
+                            <div class="diff-controls">
+                                <div class="radio-group">
+                                    <label><input type="radio" name="mode" value="line" checked> 行对比</label>
+                                    <label><input type="radio" name="mode" value="char"> 字符对比</label>
+                                </div>
+                                <div class="check-group">
+                                    <label><input type="checkbox" id="ignoreCase"> 忽略大小写</label>
+                                    <label><input type="checkbox" id="ignoreWhitespace"> 忽略空白</label>
+                                </div>
+                                <div class="inline-toggle">
+                                    <label>展示方式</label>
+                                    <select id="viewMode" class="select">
+                                        <option value="side">左右对比</option>
+                                        <option value="inline" selected>合并视图</option>
+                                    </select>
+                                </div>
+                                <div class="copy-group">
+                                    <button class="btn-primary" id="swapBtn"><i class="fas fa-exchange-alt"></i> 交换左右</button>
+                                    <button class="btn-primary" id="copyDiffBtn"><i class="fas fa-copy"></i> 复制差异</button>
+                                </div>
+                            </div>
+                            <div class="diff-editors">
+                                <div class="editor-box">
+                                    <div class="editor-head">
+                                        <span>文本 A</span>
+                                        <div class="editor-actions">
+                                            <button class="btn-mini" id="pasteA"><i class="fas fa-paste"></i>粘贴</button>
+                                            <button class="btn-mini" id="clearA"><i class="fas fa-trash-alt"></i>清空</button>
+                                        </div>
+                                    </div>
+                                    <textarea id="textA" class="editor-area" placeholder="在此输入或粘贴左侧文本"></textarea>
+                                </div>
+                                <div class="editor-box">
+                                    <div class="editor-head">
+                                        <span>文本 B</span>
+                                        <div class="editor-actions">
+                                            <button class="btn-mini" id="pasteB"><i class="fas fa-paste"></i>粘贴</button>
+                                            <button class="btn-mini" id="clearB"><i class="fas fa-trash-alt"></i>清空</button>
+                                        </div>
+                                    </div>
+                                    <textarea id="textB" class="editor-area" placeholder="在此输入或粘贴右侧文本"></textarea>
+                                </div>
+                            </div>
+                            <div class="result-box">
+                                <div class="result-head">
+                                    <span>对比结果</span>
+                                    <span class="stats" id="stats">0 行相同 · 0 行新增 · 0 行删除 · 0 行修改</span>
+                                </div>
+                                <div class="result-content" id="resultContent">
+                                    <div class="result-pane" id="resultLeft"></div>
+                                    <div class="result-pane" id="resultRight"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer id="footer">
+        <div id="footer-wrap">
+            <div class="copyright">&copy;2016 - 2027 BY WYC</div>
+            <div class="footer_custom_text">
+                <a target="_blank" rel="noopener" href="http://beian.miit.gov.cn" th:text="${tenantConfig.webInfo.icp}">豫ICP备2021148055号</a>
+                <a href="https://beian.mps.gov.cn/#/query/webSearch?code=31011402021790" target="_blank" rel="nofollow" hotrep="hp.footer.bottom.beian" style="margin-left: 6px;">
+                    <img src="/img/gaba.avif" style="width: 14px; margin-right: 5px;">
+                    <span>沪公网安备31011402021790号</span>
+                </a>
+            </div>
+        </div>
+    </footer>
+</div>
+<script src="/js/tools/diff.js"></script>
+</body>
+</html>

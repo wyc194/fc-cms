@@ -21,9 +21,31 @@ document.addEventListener('DOMContentLoaded', function() {
     const btnClear = document.getElementById('btnClear');
     const btnCopyRegex = document.getElementById('btnCopyRegex');
 
+    // 本地缓存
+    const CACHE_KEY_PATTERN = 'tool.regex.pattern';
+    const CACHE_KEY_TEXT = 'tool.regex.text';
+    const loadCache = () => {
+        const get = (k) => (window.btf && window.btf.optLocal) ? window.btf.optLocal.get(k) : localStorage.getItem(k);
+        const p = get(CACHE_KEY_PATTERN);
+        const t = get(CACHE_KEY_TEXT);
+        if (p) regexPattern.value = typeof p === 'string' ? p : p;
+        if (t) testString.value = typeof t === 'string' ? t : t;
+    };
+    const savePattern = () => {
+        const v = regexPattern.value;
+        if (window.btf && window.btf.optLocal) window.btf.optLocal.set(CACHE_KEY_PATTERN, v, 365);
+        else localStorage.setItem(CACHE_KEY_PATTERN, v);
+    };
+    const saveText = () => {
+        const v = testString.value;
+        if (window.btf && window.btf.optLocal) window.btf.optLocal.set(CACHE_KEY_TEXT, v, 365);
+        else localStorage.setItem(CACHE_KEY_TEXT, v);
+    };
+    loadCache();
+
     // Event Listeners
-    regexPattern.addEventListener('input', updateResult);
-    testString.addEventListener('input', updateResult);
+    regexPattern.addEventListener('input', () => { savePattern(); updateResult(); });
+    testString.addEventListener('input', () => { saveText(); updateResult(); });
     testString.addEventListener('scroll', syncScroll);
     
     // Resize observer to sync height when textarea is resized
@@ -33,7 +55,7 @@ document.addEventListener('DOMContentLoaded', function() {
     resizeObserver.observe(testString);
 
     Object.values(flags).forEach(checkbox => {
-        checkbox.addEventListener('change', updateResult);
+        if (checkbox) checkbox.addEventListener('change', updateResult);
     });
 
     btnClear.addEventListener('click', () => {
@@ -41,6 +63,8 @@ document.addEventListener('DOMContentLoaded', function() {
         regexPattern.value = '';
         updateResult();
         testString.focus();
+        localStorage.removeItem(CACHE_KEY_TEXT);
+        localStorage.removeItem(CACHE_KEY_PATTERN);
     });
 
     btnPaste.addEventListener('click', async () => {
@@ -62,18 +86,20 @@ document.addEventListener('DOMContentLoaded', function() {
             const flagStr = btn.dataset.flags || 'g';
             
             // Reset flags
-            Object.values(flags).forEach(cb => cb.checked = false);
+            Object.values(flags).forEach(cb => { if (cb) cb.checked = false });
             
             // Set flags from preset
             for (const char of flagStr) {
-                if (char === 'g') flags.global.checked = true;
-                if (char === 'i') flags.insensitive.checked = true;
-                if (char === 'm') flags.multiline.checked = true;
-                if (char === 's') flags.dotAll.checked = true;
-                if (char === 'u') flags.unicode.checked = true;
-                if (char === 'y') flags.sticky.checked = true;
+                if (char === 'g' && flags.global) flags.global.checked = true;
+                if (char === 'i' && flags.insensitive) flags.insensitive.checked = true;
+                if (char === 'm' && flags.multiline) flags.multiline.checked = true;
+                if (char === 's' && flags.dotAll) flags.dotAll.checked = true;
+                if (char === 'u' && flags.unicode) flags.unicode.checked = true;
+                if (char === 'y' && flags.sticky) flags.sticky.checked = true;
             }
             
+            // Save pattern to cache
+            if (typeof savePattern === 'function') savePattern();
             updateResult();
         });
     });
@@ -84,12 +110,12 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!pattern) return;
         
         let flagStr = '';
-        if (flags.global.checked) flagStr += 'g';
-        if (flags.insensitive.checked) flagStr += 'i';
-        if (flags.multiline.checked) flagStr += 'm';
-        if (flags.dotAll.checked) flagStr += 's';
-        if (flags.unicode.checked) flagStr += 'u';
-        if (flags.sticky.checked) flagStr += 'y';
+        if (flags.global && flags.global.checked) flagStr += 'g';
+        if (flags.insensitive && flags.insensitive.checked) flagStr += 'i';
+        if (flags.multiline && flags.multiline.checked) flagStr += 'm';
+        if (flags.dotAll && flags.dotAll.checked) flagStr += 's';
+        if (flags.unicode && flags.unicode.checked) flagStr += 'u';
+        if (flags.sticky && flags.sticky.checked) flagStr += 'y';
         
         const fullRegex = `/${pattern}/${flagStr}`;
         
@@ -129,12 +155,12 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         let flagStr = '';
-        if (flags.global.checked) flagStr += 'g';
-        if (flags.insensitive.checked) flagStr += 'i';
-        if (flags.multiline.checked) flagStr += 'm';
-        if (flags.dotAll.checked) flagStr += 's';
-        if (flags.unicode.checked) flagStr += 'u';
-        if (flags.sticky.checked) flagStr += 'y';
+        if (flags.global && flags.global.checked) flagStr += 'g';
+        if (flags.insensitive && flags.insensitive.checked) flagStr += 'i';
+        if (flags.multiline && flags.multiline.checked) flagStr += 'm';
+        if (flags.dotAll && flags.dotAll.checked) flagStr += 's';
+        if (flags.unicode && flags.unicode.checked) flagStr += 'u';
+        if (flags.sticky && flags.sticky.checked) flagStr += 'y';
 
         try {
             const regex = new RegExp(pattern, flagStr);
@@ -144,7 +170,7 @@ document.addEventListener('DOMContentLoaded', function() {
             // Safety check for empty pattern to avoid infinite loop
             if (pattern === '') {
                  // Do nothing for empty pattern
-            } else if (!flags.global.checked) {
+            } else if (!(flags.global && flags.global.checked)) {
                 match = regex.exec(text);
                 if (match) {
                     matches.push({
