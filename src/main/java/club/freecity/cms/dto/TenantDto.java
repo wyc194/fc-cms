@@ -1,5 +1,8 @@
 package club.freecity.cms.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import club.freecity.cms.util.LenientLocalDateTimeDeserializer;
 import club.freecity.cms.validator.group.CreateGroup;
 import club.freecity.cms.validator.group.UpdateGroup;
 import jakarta.validation.constraints.NotBlank;
@@ -42,6 +45,8 @@ public class TenantDto {
     
     private String packageName;
 
+    @JsonDeserialize(using = LenientLocalDateTimeDeserializer.class)
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd['T'HH[:mm[:ss][.SSS]]]")
     private LocalDateTime expireTime;
 
     private LocalDateTime createTime;

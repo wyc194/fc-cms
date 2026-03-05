@@ -210,6 +210,46 @@ async function build() {
             }
         }
         console.log('带指纹的实体文件生成完毕！');
+        
+        // 5. 生成工具页清单 (JSON)，供后端在现有 sitemap.xml 中合并输出
+        console.log('生成工具页清单 (JSON)...');
+        const baseUrl = process.env.SITEMAP_BASE_URL || process.env.APP_BASE_URL || 'https://freecity.club';
+
+        // 扫描 /static/tools 下的工具页
+        const toolHtmlFiles = globSync(`${paths.staticSrc}/tools/*.html`);
+        const urlEntries = [];
+        const fmtDate = (d) => {
+            try {
+                return new Date(d).toISOString().substring(0, 10);
+            } catch {
+                return new Date().toISOString().substring(0, 10);
+            }
+        };
+
+        for (const file of toolHtmlFiles) {
+            const fileName = path.basename(file); // xxx.html
+            const stat = fs.statSync(file);
+            const lastmod = fmtDate(stat.mtime);
+            const urlPath = `/tools/${fileName}`;
+            urlEntries.push({ loc: `${baseUrl}${urlPath}`, lastmod });
+        }
+
+        // 仅当存在工具页时生成
+        if (urlEntries.length > 0) {
+            // 仅写入 JSON 清单，供后端在现有 sitemap.xml 中合并输出
+            const toolsJsonPath = path.join(paths.staticSrc, 'tools-sitemap.json');
+            const jsonEntries = toolHtmlFiles.map(file => {
+                const stat = fs.statSync(file);
+                return {
+                    path: `/tools/${path.basename(file)}`,
+                    lastmod: fmtDate(stat.mtime)
+                };
+            });
+            fs.writeFileSync(toolsJsonPath, JSON.stringify(jsonEntries, null, 2), 'utf8');
+            console.log(`已生成: ${toolsJsonPath}`);
+        } else {
+            console.log('未发现工具页 (*.html)，跳过生成工具页清单');
+        }
     } catch (error) {
         console.error('构建失败:', error);
         process.exit(1);

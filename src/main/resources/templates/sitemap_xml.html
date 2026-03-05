@@ -57,4 +57,12 @@
         <changefreq>weekly</changefreq>
         <priority>0.6</priority>
     </url>
+
+    <!-- 工具页 (静态) -->
+    <url th:each="tool : ${toolPages}">
+        <loc th:text="${baseUrl} + ${tool.path}"></loc>
+        <lastmod th:text="${tool.lastmod}"></lastmod>
+        <changefreq>monthly</changefreq>
+        <priority>0.5</priority>
+    </url>
 </urlset>

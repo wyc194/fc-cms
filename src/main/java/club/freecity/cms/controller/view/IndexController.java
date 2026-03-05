@@ -21,8 +21,8 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
-
-import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
+import club.freecity.cms.dto.ToolPage;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -172,17 +172,17 @@ public class IndexController {
     }
 
     @GetMapping(value = "/sitemap.xml", produces = MediaType.APPLICATION_XML_VALUE)
-    public String sitemapXml(Model model, HttpServletRequest request) {
-        // 获取基础 URL
-        String baseUrl = request.getScheme() + "://" + request.getServerName();
-        if (request.getServerPort() != 80 && request.getServerPort() != 443) {
-            baseUrl += ":" + request.getServerPort();
-        }
+    public String sitemapXml(Model model) {
+        String baseUrl = ServletUriComponentsBuilder
+                .fromCurrentContextPath()
+                .build()
+                .toUriString();
         
         model.addAttribute("baseUrl", baseUrl);
         model.addAttribute("articles", articleService.listPublishedArticles(Pageable.unpaged()).getContent());
         model.addAttribute("categories", categoryService.listCategoryTree());
         model.addAttribute("tags", tagService.listAllTags());
+        model.addAttribute("toolPages", ToolPage.loadFromClasspath());
         
         return "sitemap_xml";
     }
