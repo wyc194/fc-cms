@@ -71,7 +71,7 @@ public class SecurityConfig {
                 .contentTypeOptions(Customizer.withDefaults())
                 // 启用内容安全策略 (CSP) - 基础配置，已放行 cdn.jsdelivr.net, cdnjs.cloudflare.com, jinrishici.com 等公共资源
                 .contentSecurityPolicy(csp -> csp
-                    .policyDirectives("default-src 'self'; script-src 'self' 'unsafe-inline' cdn.jsdelivr.net cdnjs.cloudflare.com sdk.jinrishici.com; style-src 'self' 'unsafe-inline' cdn.jsdelivr.net cdnjs.cloudflare.com; img-src 'self' data: *; font-src 'self' data: cdn.jsdelivr.net cdnjs.cloudflare.com; connect-src 'self' cdn.jsdelivr.net v2.jinrishici.com;")
+                    .policyDirectives("default-src 'self'; script-src 'self' 'unsafe-inline' cdn.jsdelivr.net cdnjs.cloudflare.com sdk.jinrishici.com hm.baidu.com; style-src 'self' 'unsafe-inline' cdn.jsdelivr.net cdnjs.cloudflare.com; img-src 'self' data: *; font-src 'self' data: cdn.jsdelivr.net cdnjs.cloudflare.com; connect-src 'self' cdn.jsdelivr.net v2.jinrishici.com;")
                 )
             )
             .authorizeHttpRequests(auth -> auth
