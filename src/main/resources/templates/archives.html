@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh-CN" data-theme="light" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{template::common_head('归档 | ' + ${tenantConfig?.name ?: 'FreeCity'}, '归档页面')}">
+<head th:replace="~{template::common_head('归档 | ' + ${tenantConfig?.name ?: 'FreeCity'}, '归档页面', ${null})}">
 </head>
 <body>
 <div th:replace="~{template::loading}"></div>

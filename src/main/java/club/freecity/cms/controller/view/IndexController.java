@@ -3,10 +3,13 @@ import club.freecity.cms.common.ResultCode;
 import club.freecity.cms.dto.ArticleDto;
 import club.freecity.cms.exception.BusinessException;
 import club.freecity.cms.service.ArticleService;
+import jakarta.servlet.http.HttpServletRequest;
 import club.freecity.cms.service.CategoryService;
 import club.freecity.cms.service.TagService;
 import club.freecity.cms.service.TenantService;
 import club.freecity.cms.dto.TenantDto;
+import club.freecity.cms.dto.CategoryDto;
+import club.freecity.cms.dto.TagDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -21,6 +24,7 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import club.freecity.cms.dto.ToolPage;
 
@@ -53,6 +57,10 @@ public class IndexController {
                          @PageableDefault(size = 10, sort = "createTime", direction = Sort.Direction.DESC) Pageable pageable) {
         model.addAttribute("articles", articleService.searchArticles(keyword, pageable));
         model.addAttribute("keyword", keyword);
+        TenantDto tenant = tenantService.getCurrentTenantConfig();
+        model.addAttribute("pageTitle", "搜索 " + keyword + " | " + (tenant.getName() != null ? tenant.getName() : ""));
+        model.addAttribute("pageDescription", "关于 \"" + keyword + "\" 的搜索结果");
+        model.addAttribute("pageKeywords", keyword);
         addAsideModelAttributes(model);
         return "index";
     }
@@ -73,6 +81,14 @@ public class IndexController {
         model.addAttribute("article", article);
         model.addAttribute("prevArticle", articleService.getPreviousArticle(article.getCreateTime()));
         model.addAttribute("nextArticle", articleService.getNextArticle(article.getCreateTime()));
+        if (article.getTags() != null && !article.getTags().isEmpty()) {
+            String tagsJoined = article.getTags().stream()
+                    .map(t -> t.getName())
+                    .collect(java.util.stream.Collectors.joining(", "));
+            String pageKeywords = (article.getTitle() != null ? article.getTitle() : "") 
+                    + (tagsJoined.isEmpty() ? "" : ", " + tagsJoined);
+            model.addAttribute("pageKeywords", pageKeywords);
+        }
         
         Long categoryId = article.getCategory() != null ? article.getCategory().getId() : null;
         model.addAttribute("relatedArticles", articleService.listRelatedArticles(article.getId(), categoryId));
@@ -86,7 +102,12 @@ public class IndexController {
                              @PageableDefault(size = 10, sort = "createTime", direction = Sort.Direction.DESC) Pageable pageable) {
         if (id != null) {
             model.addAttribute("articles", articleService.listPublishedArticlesByCategory(id, pageable));
-            model.addAttribute("category", categoryService.getCategoryById(id));
+            CategoryDto category = categoryService.getCategoryById(id);
+            model.addAttribute("category", category);
+            TenantDto tenant = tenantService.getCurrentTenantConfig();
+            model.addAttribute("pageTitle", category.getName() + " | " + (tenant.getName() != null ? tenant.getName() : ""));
+            model.addAttribute("pageDescription", "分类 " + category.getName() + " 的文章列表");
+            model.addAttribute("pageKeywords", category.getName());
             addAsideModelAttributes(model);
             return "index";
         }
@@ -100,7 +121,12 @@ public class IndexController {
                        @PageableDefault(size = 10, sort = "createTime", direction = Sort.Direction.DESC) Pageable pageable) {
         if (id != null) {
             model.addAttribute("articles", articleService.listPublishedArticlesByTag(id, pageable));
-            model.addAttribute("tag", tagService.getTagById(id));
+            TagDto tag = tagService.getTagById(id);
+            model.addAttribute("tag", tag);
+            TenantDto tenant = tenantService.getCurrentTenantConfig();
+            model.addAttribute("pageTitle", tag.getName() + " | " + (tenant.getName() != null ? tenant.getName() : ""));
+            model.addAttribute("pageDescription", "标签 " + tag.getName() + " 的文章列表");
+            model.addAttribute("pageKeywords", tag.getName());
             addAsideModelAttributes(model);
             return "index";
         }
@@ -121,6 +147,14 @@ public class IndexController {
             articlesPage = articleService.listPublishedArticles(pageable);
         }
         return processArchives(model, articlesPage);
+    }
+
+    @ModelAttribute
+    public void addCurrentUrl(Model model, HttpServletRequest request) {
+        if (request != null) {
+            String url = request.getRequestURL() != null ? request.getRequestURL().toString() : "";
+            model.addAttribute("currentUrl", url);
+        }
     }
 
     private String processArchives(Model model, Page<ArticleDto> articlesPage) {

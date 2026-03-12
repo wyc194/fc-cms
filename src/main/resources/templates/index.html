@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh-CN" data-theme="light" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{template::common_head(${tenantConfig?.webInfo?.title ?: '归园田居 - 田园将芜胡不归'}, ${tenantConfig?.webInfo?.description ?: '个人技术博客和在线工具集'})}"></head>
+<head th:replace="~{template::common_head(${pageTitle ?: (tenantConfig?.webInfo?.title ?: '归园田居 - 田园将芜胡不归')}, ${pageDescription ?: (tenantConfig?.webInfo?.description ?: '个人技术博客和在线工具集')}, ${pageKeywords})}"></head>
 <body>
 <div th:replace="~{template::loading}"></div>
 <div th:replace="~{template::background}"></div>

@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="zh-CN" data-theme="light" xmlns:th="http://www.thymeleaf.org">
 <!-- common head -->
-<head th:fragment="common_head(title, description)">
+<head th:fragment="common_head(title, description, keywords)">
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -10,8 +10,10 @@
     <meta name="copyright" th:content="${tenantConfig?.webInfo?.authorName ?: 'wyc'}">
     <meta name="format-detection" content="telephone=no">
     <meta name="theme-color" content="#ffffff">
-    <meta name="description" th:content="${tenantConfig?.webInfo?.description ?: description}">
-    <meta name="keywords" th:content="${tenantConfig?.webInfo?.keywords}">
+    <meta name="description" th:content="${description ?: (tenantConfig?.webInfo?.description)}">
+    <meta name="keywords" th:content="${keywords ?: (tenantConfig?.webInfo?.keywords)}">
+    <meta name="robots" content="index,follow">
+    <link rel="canonical" th:href="${currentUrl}">
     <link rel="shortcut icon" th:href="${tenantConfig?.webInfo?.favicon ?: '/img/favicon.ico'}">
     <style th:if="${tenantConfig?.customCode?.css}" th:text="${tenantConfig.customCode.css}"></style>
     <script th:if="${tenantConfig?.customCode?.js}" th:text="${tenantConfig.customCode.js}"></script>
@@ -21,6 +23,46 @@
     <link rel="stylesheet" th:href="@{/css/components.css}">
     <link rel="stylesheet" th:href="@{/css/animations.css}">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.1/css/all.min.css">
+    <th:block th:if="${article != null}">
+        <meta property="og:type" content="article">
+        <meta property="og:site_name" th:content="${tenantConfig?.name ?: 'FreeCity'}">
+        <meta property="og:title" th:content="${article.title}">
+        <meta property="og:description" th:content="${article.summary}">
+        <meta property="og:url" th:content="${currentUrl}">
+        <meta property="og:image" th:content="${article.thumbnail ?: (tenantConfig?.webInfo?.logo ?: '/img/avatar.png')}">
+        <meta property="og:locale" content="zh_CN">
+        <meta name="twitter:card" content="summary_large_image">
+        <meta name="twitter:title" th:content="${article.title}">
+        <meta name="twitter:description" th:content="${article.summary}">
+        <meta name="twitter:image" th:content="${article.thumbnail ?: (tenantConfig?.webInfo?.logo ?: '/img/avatar.png')}">
+        <meta property="article:published_time" th:if="${article.createTime != null}" th:content="${#temporals.format(article.createTime, 'yyyy-MM-dd''T''HH:mm:ss')}">
+        <meta property="article:modified_time" th:if="${article.updateTime != null}" th:content="${#temporals.format(article.updateTime, 'yyyy-MM-dd''T''HH:mm:ss')}">
+        <meta property="article:section" th:if="${article.category != null}" th:content="${article.category.name}">
+        <th:block th:each="t : ${article.tags}">
+            <meta property="article:tag" th:content="${t.name}">
+        </th:block>
+        <link rel="prev" th:if="${prevArticle != null}" th:href="@{'/article/' + ${prevArticle.id}}">
+        <link rel="next" th:if="${nextArticle != null}" th:href="@{'/article/' + ${nextArticle.id}}">
+        <script type="application/ld+json" th:inline="javascript">
+        {
+          "@context": "https://schema.org",
+          "@type": "Article",
+          "headline": [[${article.title}]],
+          "description": [[${article.summary}]],
+          "image": [[${article.thumbnail ?: (tenantConfig?.webInfo?.logo ?: '/img/avatar.png')}]],
+          "datePublished": [[${article.createTime != null} ? ${#temporals.format(article.createTime, 'yyyy-MM-dd''T''HH:mm:ss')} : '']],
+          "dateModified": [[${article.updateTime != null} ? ${#temporals.format(article.updateTime, 'yyyy-MM-dd''T''HH:mm:ss')} : '']],
+          "author": {"@type":"Person","name": [[${tenantConfig?.webInfo?.authorName ?: 'FreeCity'}]]},
+          "publisher": {
+            "@type":"Organization",
+            "name": [[${tenantConfig?.name ?: 'FreeCity'}]],
+            "logo": {"@type":"ImageObject","url": [[${tenantConfig?.webInfo?.logo ?: '/img/avatar.png'}]]}
+          },
+          "articleSection": [[${article.category != null} ? ${article.category.name} : '']],
+          "mainEntityOfPage": {"@type":"WebPage","@id": [[${currentUrl}]]}
+        }
+        </script>
+    </th:block>
     <noscript>
         <style type="text/css">
             #nav { opacity: 1 }

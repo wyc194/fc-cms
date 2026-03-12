@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh-CN" data-theme="light" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{template::common_head(${article.title} + ' | ' + ${tenantConfig?.name ?: 'FreeCity'}, ${article.summary})}">
+<head th:replace="~{template::common_head(${article.title} + ' | ' + ${tenantConfig?.name ?: 'FreeCity'}, ${article.summary}, ${pageKeywords})}">
 </head>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
 <body>
