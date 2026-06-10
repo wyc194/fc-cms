@@ -9,6 +9,9 @@ import club.freecity.cms.util.MarkdownUtils;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
+
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
 import java.util.List;
@@ -16,9 +19,17 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 @Slf4j
+@Component
 public class BeanConverter {
 
     private static final ObjectMapper objectMapper = new ObjectMapper();
+    
+    private static String baseDomain;
+
+    @Value("${app.tenant.base-domain:freecity.club}")
+    public void setBaseDomain(String domain) {
+        baseDomain = domain;
+    }
 
     public static MediaAssetDto toDto(MediaAsset entity) {
         if (entity == null) return null;
@@ -124,6 +135,7 @@ public class BeanConverter {
                 .id(tenant.getId())
                 .code(tenant.getCode())
                 .name(tenant.getName())
+                .domain(tenant.getCode() + "." + baseDomain)
                 .status(tenant.getStatus())
                 .packageId(tenant.getPackageInfo() != null ? tenant.getPackageInfo().getId() : null)
                 .packageName(tenant.getPackageInfo() != null ? tenant.getPackageInfo().getName() : null)

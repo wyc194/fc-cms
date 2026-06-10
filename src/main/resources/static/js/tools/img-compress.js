@@ -6,6 +6,8 @@ document.addEventListener('DOMContentLoaded', function() {
     const quality = document.getElementById('quality');
     const qualityLabel = document.getElementById('qualityLabel');
     const targetWidthPct = document.getElementById('targetWidthPct');
+    const targetHeightPct = document.getElementById('targetHeightPct');
+    const lockAspectRatio = document.getElementById('lockAspectRatio');
     const targetFormat = document.getElementById('targetFormat');
     const btnCompressAll = document.getElementById('btnCompressAll');
     const btnDownloadAll = document.getElementById('btnDownloadAll');
@@ -25,6 +27,8 @@ document.addEventListener('DOMContentLoaded', function() {
             const opts = typeof saved === 'string' ? JSON.parse(saved) : saved;
             if (quality && opts.quality) quality.value = opts.quality;
             if (targetWidthPct && typeof opts.widthPct !== 'undefined' && opts.widthPct !== null) targetWidthPct.value = opts.widthPct;
+            if (targetHeightPct && typeof opts.heightPct !== 'undefined' && opts.heightPct !== null) targetHeightPct.value = opts.heightPct;
+            if (lockAspectRatio && typeof opts.lockRatio !== 'undefined') lockAspectRatio.checked = opts.lockRatio;
             if (targetFormat && opts.format) targetFormat.value = opts.format;
         } catch (e) {}
     }
@@ -33,8 +37,10 @@ document.addEventListener('DOMContentLoaded', function() {
     function saveOpts() {
         const qVal = quality ? Number(quality.value) : 80;
         const wVal = targetWidthPct ? (targetWidthPct.value ? Math.max(0, Math.min(100, Number(targetWidthPct.value))) : 100) : 100;
+        const hVal = targetHeightPct ? (targetHeightPct.value ? Math.max(0, Math.min(100, Number(targetHeightPct.value))) : 100) : 100;
+        const lock = lockAspectRatio ? lockAspectRatio.checked : true;
         const fVal = targetFormat ? targetFormat.value : 'image/jpeg';
-        const opts = { quality: qVal, widthPct: wVal, format: fVal };
+        const opts = { quality: qVal, widthPct: wVal, heightPct: hVal, lockRatio: lock, format: fVal };
         setLocal(CACHE_OPTS, JSON.stringify(opts), 365);
     }
 
@@ -65,9 +71,25 @@ document.addEventListener('DOMContentLoaded', function() {
         saveOpts();
     });
     if (targetWidthPct) targetWidthPct.addEventListener('input', () => {
-        // Clamp and save
         const v = Math.max(0, Math.min(100, Number(targetWidthPct.value || 100)));
         targetWidthPct.value = v;
+        if (lockAspectRatio && lockAspectRatio.checked && targetHeightPct) {
+            targetHeightPct.value = v;
+        }
+        saveOpts();
+    });
+    if (targetHeightPct) targetHeightPct.addEventListener('input', () => {
+        const v = Math.max(0, Math.min(100, Number(targetHeightPct.value || 100)));
+        targetHeightPct.value = v;
+        if (lockAspectRatio && lockAspectRatio.checked && targetWidthPct) {
+            targetWidthPct.value = v;
+        }
+        saveOpts();
+    });
+    if (lockAspectRatio) lockAspectRatio.addEventListener('change', () => {
+        if (lockAspectRatio.checked && targetWidthPct && targetHeightPct) {
+            targetHeightPct.value = targetWidthPct.value;
+        }
         saveOpts();
     });
     if (targetFormat) targetFormat.addEventListener('change', saveOpts);
@@ -147,13 +169,15 @@ document.addEventListener('DOMContentLoaded', function() {
     async function compress(file) {
         const q = quality ? Number(quality.value) / 100 : 0.8;
         const format = targetFormat ? targetFormat.value : 'image/jpeg';
-        const pct = targetWidthPct ? (targetWidthPct.value ? Math.max(0, Math.min(100, Number(targetWidthPct.value))) : 100) : 100;
+        const wPct = targetWidthPct ? (targetWidthPct.value ? Math.max(0, Math.min(100, Number(targetWidthPct.value))) : 100) : 100;
+        const hPct = targetHeightPct ? (targetHeightPct.value ? Math.max(0, Math.min(100, Number(targetHeightPct.value))) : 100) : 100;
 
         const source = await loadImage(file);
         const srcW = source.width, srcH = source.height;
-        let dstW = Math.round(srcW * (pct / 100));
+        let dstW = Math.round(srcW * (wPct / 100));
+        let dstH = Math.round(srcH * (hPct / 100));
         if (dstW < 1) dstW = 1;
-        const dstH = Math.round(srcH * (dstW / srcW));
+        if (dstH < 1) dstH = 1;
 
         const canvas = document.createElement('canvas');
         canvas.width = dstW;

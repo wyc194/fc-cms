@@ -35,7 +35,10 @@
         }
         .tool-workspace { display: flex; flex-direction: column; gap: 12px }
         .controls { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; background: #fff; border: 1px solid var(--img-border); border-radius: 8px; padding: 8px 10px }
-        .group { display: flex; gap: 8px; align-items: center }
+        .group { display: flex; gap: 8px; align-items: center; background: #f0f7ff; padding: 4px 8px; border-radius: 6px; border: 1px solid #cce5ff; }
+        /* 尺寸设置分组样式 */
+        .dimension-group { display: flex; align-items: center; gap: 8px; background: #f0f7ff; padding: 4px 8px; border-radius: 6px; border: 1px solid #cce5ff; }
+        .dimension-group .inner-group { display: flex; gap: 8px; align-items: center; }
         .select, .input, .range { border: 1px solid var(--img-border); border-radius: 6px; padding: 6px 10px; background: #fff; font-size: 0.85rem; color: #333 }
         .select { -webkit-appearance: none; appearance: none; height: 32px; line-height: 20px; padding: 4px 10px }
         .range { width: 180px; box-sizing: border-box; height: 32px; margin: 0; -webkit-appearance: none; appearance: none; background: transparent }
@@ -93,9 +96,19 @@
                                     <input id="quality" type="range" class="range" min="0" max="100" step="1" value="80">
                                     <span id="qualityLabel" class="stat">80%</span>
                                 </div>
-                                <div class="group">
-                                    <label>宽度(%)</label>
-                                    <input id="targetWidthPct" type="number" class="input" placeholder="0-100" min="0" max="100" value="100" style="width:100px">
+                                <div class="dimension-group">
+                                    <div class="inner-group">
+                                        <label>宽度(%)</label>
+                                        <input id="targetWidthPct" type="number" class="input" placeholder="0-100" min="0" max="100" value="100" style="width:70px">
+                                    </div>
+                                    <div class="inner-group">
+                                        <label>高度(%)</label>
+                                        <input id="targetHeightPct" type="number" class="input" placeholder="0-100" min="0" max="100" value="100" style="width:70px">
+                                    </div>
+                                    <div class="inner-group">
+                                        <input id="lockAspectRatio" type="checkbox" checked>
+                                        <label for="lockAspectRatio" style="font-size: 0.8rem; cursor: pointer;">锁定比例</label>
+                                    </div>
                                 </div>
                                 <div class="group">
                                     <label>格式</label>
@@ -138,7 +151,8 @@
                                     <ul>
                                         <li>所有压缩在本地浏览器中完成，不会上传到服务器。</li>
                                         <li>质量越低体积越小，建议在 60%~85% 之间权衡画质与体积。</li>
-                                        <li>宽度按百分比缩放，范围 0–100，默认 100%（高度自动等比）。</li>
+                                        <li>支持按百分比缩放宽度和高度。锁定比例时，修改其中一个值将同步调整另一个。</li>
+                                        <li>取消锁定比例可单独设置宽度和高度（可能会导致图像拉伸）。</li>
                                         <li>批量下载会分别保存每张压缩后的图片。</li>
                                     </ul>
                                 </div>

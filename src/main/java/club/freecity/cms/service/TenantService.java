@@ -1,5 +1,6 @@
 package club.freecity.cms.service;
 
+import club.freecity.cms.common.TenantContext;
 import club.freecity.cms.config.CacheConfig;
 import club.freecity.cms.converter.BeanConverter;
 import club.freecity.cms.enums.TenantStatus;
@@ -59,7 +60,7 @@ public class TenantService {
     @CacheEvict(value = CacheConfig.CACHE_TENANTS, key = "#tenantDto.code")
     public TenantCreateResultDto saveTenant(TenantDto tenantDto) {
         if (tenantRepository.findByCode(tenantDto.getCode()).isPresent()) {
-            throw new BusinessException("租户编码已存在");
+            throw new BusinessException("租户编码 [" + tenantDto.getCode() + "] 已存在");
         }
         Tenant tenant = new Tenant();
         tenant.setCode(tenantDto.getCode());
@@ -116,7 +117,7 @@ public class TenantService {
 
     @Transactional(readOnly = true)
     public TenantDto getCurrentTenantConfig() {
-        String code = club.freecity.cms.common.TenantContext.getCurrentTenantCode();
+        String code = TenantContext.getCurrentTenantCode();
         if (code == null) {
             code = "admin"; // 默认租户
         }

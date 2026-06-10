@@ -31,6 +31,8 @@ public class TenantDto {
     @NotBlank(groups = CreateGroup.class)
     private String name;
 
+    private String domain;
+
     private String status;
 
     private WebInfo webInfo;
