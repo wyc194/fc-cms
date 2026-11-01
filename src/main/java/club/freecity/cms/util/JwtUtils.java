@@ -84,7 +84,8 @@ public class JwtUtils {
     public Boolean validateToken(String token, String username) {
         // 只解析一次 Claims，避免链路上重复解析 JWT
         final Claims claims = extractAllClaims(token);
-        return (claims.getSubject().equals(username) && claims.getExpiration().before(new Date()));
+        // 有效 = 主体匹配 且 未过期（过期时间在当前时间之后）
+        return claims.getSubject().equals(username) && claims.getExpiration().after(new Date());
     }
 
     public String extractUsername(String token) {
