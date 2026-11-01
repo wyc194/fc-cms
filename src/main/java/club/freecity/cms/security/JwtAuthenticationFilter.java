@@ -1,6 +1,7 @@
 package club.freecity.cms.security;
 
 import club.freecity.cms.common.TenantContext;
+import club.freecity.cms.config.CacheConfig;
 import club.freecity.cms.util.JwtUtils;
 import club.freecity.cms.common.SecurityConstants;
 import jakarta.servlet.FilterChain;
@@ -8,6 +9,8 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.Cache;
+import org.springframework.cache.CacheManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -26,11 +29,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtUtils jwtUtils;
     private final UserDetailsService userDetailsService;
+    private final CacheManager cacheManager;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
-        
+
         final String authHeader = request.getHeader(SecurityConstants.HEADER_AUTHORIZATION);
         final String jwt;
         final String username;
@@ -44,6 +48,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         try {
             username = jwtUtils.extractUsername(jwt);
             if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+                // 校验令牌是否已被登出撤销（早于用户登出时间签发的令牌立即失效）
+                if (isRevoked(jwtUtils.extractUserId(jwt), jwtUtils.extractIssuedAt(jwt))) {
+                    filterChain.doFilter(request, response);
+                    return;
+                }
+
                 // 在加载用户信息前，先从 JWT 中提取租户信息并设置到上下文
                 // 这样 UserDetailsService 中的 Repository 查询才能正确匹配到租户
                 Long tenantId = jwtUtils.extractTenantId(jwt);
@@ -96,12 +106,22 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         } catch (Exception e) {
             // Token 验证失败，不设置 SecurityContext
         }
-        
+
         try {
             filterChain.doFilter(request, response);
         } finally {
             // 不再这里清理，由最外层的 TenantIdentificationFilter 统一清理
             // 否则会清除掉子域名识别到的租户信息
         }
+    }
+
+    /** 校验令牌是否已被登出撤销（与 AuthService 的撤销口径一致） */
+    private boolean isRevoked(Long userId, Long issuedAt) {
+        if (userId == null || issuedAt == null) {
+            return false;
+        }
+        Cache cache = cacheManager.getCache(CacheConfig.CACHE_AUTH_REVOCATION);
+        Long revokedAt = cache == null ? null : cache.get(userId, Long.class);
+        return revokedAt != null && issuedAt < revokedAt;
     }
 }

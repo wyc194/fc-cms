@@ -12,7 +12,10 @@ import org.owasp.html.HtmlPolicyBuilder;
 import org.owasp.html.PolicyFactory;
 import org.owasp.html.Sanitizers;
 import org.unbescape.html.HtmlEscape;
+
 import java.util.Arrays;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Markdown 工具类，用于将 Markdown 转换为 HTML
@@ -22,6 +25,14 @@ public class MarkdownUtils {
     private static final Parser PARSER;
     private static final HtmlRenderer RENDERER;
     private static final PolicyFactory POLICY;
+
+    /** HTML 实体（命名/十进制/十六进制，分号可省略） */
+    private static final Pattern HTML_ENTITY =
+            Pattern.compile("&(#[xX][0-9a-fA-F]+|#[0-9]+|[a-zA-Z][a-zA-Z0-9]*);?");
+
+    /** 这些字符解码后可能参与构成 HTML 标记或破坏属性引号，必须保持转义形态，
+     * 防止"实体走私"（如 &lt;img onerror=...&gt; 反转义后复活为真实标签） */
+    private static final String MARKUP_CHARS = "<>&\"'";
 
     static {
         MutableDataSet options = new MutableDataSet();
@@ -78,9 +89,9 @@ public class MarkdownUtils {
         if (html == null || html.trim().isEmpty()) {
             return "";
         }
-        // OWASP Sanitizer 会将 Emoji 等非 ASCII 字符转义为 HTML 实体
-        // 使用 unbescape 进行反转义，它能正确处理代理对（Surrogate Pairs），防止 Emoji 乱码
-        return HtmlEscape.unescapeHtml(POLICY.sanitize(html));
+        // OWASP Sanitizer 会将 Emoji 等非 ASCII 字符转义为 HTML 实体（实测 &#x1f433; 形式），
+        // 这里做选择性反转义恢复可读字符，同时保留标记字符的转义以防实体走私 XSS
+        return safeUnescape(POLICY.sanitize(html));
     }
 
     /**
@@ -95,6 +106,26 @@ public class MarkdownUtils {
         }
         // 使用一个没有任何标签许可的策略来移除所有 HTML 标签
         String sanitized = new HtmlPolicyBuilder().toFactory().sanitize(text);
-        return HtmlEscape.unescapeHtml(sanitized);
+        return safeUnescape(sanitized);
+    }
+
+    /**
+     * 选择性反转义：解码 Emoji、中文标点等安全实体，保留 &lt; &gt; &amp; &quot; 等标记相关实体。
+     * 视觉效果不变，但杜绝反转义后复活出可执行标签/属性的 XSS 通道。
+     */
+    private static String safeUnescape(String sanitizedHtml) {
+        Matcher matcher = HTML_ENTITY.matcher(sanitizedHtml);
+        StringBuilder sb = new StringBuilder(sanitizedHtml.length());
+        while (matcher.find()) {
+            String decoded = HtmlEscape.unescapeHtml(matcher.group());
+            if (decoded.length() == 1 && MARKUP_CHARS.indexOf(decoded.charAt(0)) >= 0) {
+                // 解码结果为标记字符，保留原转义形式
+                matcher.appendReplacement(sb, Matcher.quoteReplacement(matcher.group()));
+            } else {
+                matcher.appendReplacement(sb, Matcher.quoteReplacement(decoded));
+            }
+        }
+        matcher.appendTail(sb);
+        return sb.toString();
     }
 }

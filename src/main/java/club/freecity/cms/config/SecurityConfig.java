@@ -69,10 +69,8 @@ public class SecurityConfig {
                 .frameOptions(frame -> frame.deny())
                 // 明确开启 X-Content-Type-Options: nosniff，防御 MIME 嗅探攻击（实际Spring Security哲学是“默认安全”，开启.headers()配置即默认加上）
                 .contentTypeOptions(Customizer.withDefaults())
-                // 启用内容安全策略 (CSP) - 基础配置，已放行 cdn.jsdelivr.net, cdnjs.cloudflare.com, jinrishici.com 等公共资源
-                .contentSecurityPolicy(csp -> csp
-                    .policyDirectives("default-src 'self'; script-src 'self' 'unsafe-inline' cdn.jsdelivr.net cdnjs.cloudflare.com sdk.jinrishici.com hm.baidu.com; style-src 'self' 'unsafe-inline' cdn.jsdelivr.net cdnjs.cloudflare.com; img-src 'self' data: *; font-src 'self' data: cdn.jsdelivr.net cdnjs.cloudflare.com; connect-src 'self' cdn.jsdelivr.net v2.jinrishici.com;")
-                )
+                // CSP 由 CspNonceFilter 按请求下发：模板页使用 per-request nonce（移除 unsafe-inline），
+                // 静态工具页/站点验证页回退旧策略，因此这里不再配置静态 CSP
             )
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
@@ -99,7 +97,9 @@ public class SecurityConfig {
         if (allowedOrigins != null && !allowedOrigins.isEmpty()) {
             configuration.setAllowedOrigins(Arrays.asList(allowedOrigins.split(",")));
         } else {
-            configuration.setAllowedOrigins(Arrays.asList("*"));
+            // allowCredentials=true 时禁止使用 "*"，否则运行时抛出 IllegalArgumentException，
+            // 这里回退为 originPatterns 以保持合法组合
+            configuration.setAllowedOriginPatterns(Arrays.asList("*"));
         }
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
         configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "X-Requested-With", "X-Tenant-Id"));

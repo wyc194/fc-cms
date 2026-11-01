@@ -16,7 +16,7 @@
     <link rel="canonical" th:href="${currentUrl}">
     <link rel="shortcut icon" th:href="${tenantConfig?.webInfo?.favicon ?: '/img/favicon.ico'}">
     <style th:if="${tenantConfig?.customCode?.css}" th:text="${tenantConfig.customCode.css}"></style>
-    <script th:if="${tenantConfig?.customCode?.js}" th:text="${tenantConfig.customCode.js}"></script>
+    <script th:if="${tenantConfig?.customCode?.js}" th:text="${tenantConfig.customCode.js}" th:attr="nonce=${cspNonce}"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/normalize.css@8.0.1/normalize.min.css">
     <link rel="stylesheet" th:href="@{/css/base.css}">
     <link rel="stylesheet" th:href="@{/css/layout.css}">
@@ -43,7 +43,7 @@
         </th:block>
         <link rel="prev" th:if="${prevArticle != null}" th:href="@{'/article/' + ${prevArticle.id}}">
         <link rel="next" th:if="${nextArticle != null}" th:href="@{'/article/' + ${nextArticle.id}}">
-        <script type="application/ld+json" th:inline="javascript">
+        <script type="application/ld+json" th:inline="javascript" th:attr="nonce=${cspNonce}">
         {
           "@context": "https://schema.org",
           "@type": "Article",
@@ -73,14 +73,14 @@
     <script th:src="@{/js/config.js}"></script>
     <script th:src="@{/js/utils.js}"></script>
     <script th:src="@{/js/search.js}"></script>
-    <script th:inline="javascript">
+    <script th:inline="javascript" th:attr="nonce=${cspNonce}">
         window.GLOBAL_CONFIG = window.GLOBAL_CONFIG || {};
         // 使用 Thymeleaf Natural Template 语法以消除编辑器语法错误提示
         window.GLOBAL_CONFIG.themeSetting = /*[[${tenantConfig?.webInfo?.theme ?: 'auto'}]]*/ 'auto';
         window.GLOBAL_CONFIG.loadingImg = /*[[${tenantConfig?.webInfo?.loadingImg ?: '/img/loading.gif'}]]*/ '/img/loading.gif';
     </script>
     <script th:src="@{/js/init.js}"></script>
-    <script>
+    <script th:attr="nonce=${cspNonce}">
         var _hmt = _hmt || [];
         (function() {
             var hm = document.createElement("script");
@@ -511,7 +511,7 @@
 <div th:fragment="bottomscript" id="bottomscript">
     <script th:src="@{/js/main.js}"></script>
     <script th:src="@{/js/tw_cn.js}"></script>
-    <script>
+    <script th:attr="nonce=${cspNonce}">
         var preloader = {
             endLoading: () => {
                 document.body.style.overflow = 'auto';

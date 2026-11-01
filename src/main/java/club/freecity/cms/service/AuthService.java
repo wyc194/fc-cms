@@ -2,6 +2,7 @@ package club.freecity.cms.service;
 
 import club.freecity.cms.common.SecurityConstants;
 import club.freecity.cms.common.TenantContext;
+import club.freecity.cms.config.CacheConfig;
 import club.freecity.cms.security.CustomUserDetails;
 import club.freecity.cms.dto.AuthResponseDto;
 import club.freecity.cms.dto.LoginDto;
@@ -15,6 +16,8 @@ import lombok.extern.slf4j.Slf4j;
 import java.time.Duration;
 import java.time.LocalDateTime;
 
+import org.springframework.cache.Cache;
+import org.springframework.cache.CacheManager;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -32,6 +35,7 @@ public class AuthService {
     private final UserService userService;
     private final JwtUtils jwtUtils;
     private final AuthenticationManager authenticationManager;
+    private final CacheManager cacheManager;
 
     private static final int MAX_LOGIN_FAIL_COUNT = 3;
     private static final int LOCKOUT_MINUTES = 5;
@@ -119,6 +123,11 @@ public class AuthService {
                 throw new BusinessException("无效的 Refresh Token");
             }
 
+            // 校验令牌是否已被登出撤销
+            if (isRevoked(jwtUtils.extractUserId(refreshToken), jwtUtils.extractIssuedAt(refreshToken))) {
+                throw new BusinessException("登录状态已失效，请重新登录");
+            }
+
             // 设置租户上下文，以便查询用户信息
             Long tenantId = jwtUtils.extractTenantId(refreshToken);
             String tenantCode = jwtUtils.extractTenantCode(refreshToken);
@@ -176,5 +185,38 @@ public class AuthService {
         } finally {
             TenantContext.clear();
         }
+    }
+
+    /**
+     * 登出：记录该用户的令牌撤销时间，早于该时间签发的 Access/Refresh Token 全部失效。
+     * 回退 1 秒以对冲 JWT iat 的秒级精度（与密码变更校验的容差口径一致）。
+     */
+    public void logout(String token) {
+        if (token == null || token.isBlank()) {
+            return;
+        }
+        try {
+            Long userId = jwtUtils.extractUserId(token);
+            if (userId == null) {
+                return;
+            }
+            Cache cache = cacheManager.getCache(CacheConfig.CACHE_AUTH_REVOCATION);
+            if (cache != null) {
+                cache.put(userId, System.currentTimeMillis() - 1000);
+            }
+        } catch (Exception e) {
+            // 无效令牌的登出按幂等处理，不抛出异常
+            log.debug("登出时忽略无效令牌: {}", e.getMessage());
+        }
+    }
+
+    /** 校验令牌是否已被撤销（早于用户登出时间签发，供 refreshToken 调用） */
+    private boolean isRevoked(Long userId, Long issuedAt) {
+        if (userId == null || issuedAt == null) {
+            return false;
+        }
+        Cache cache = cacheManager.getCache(CacheConfig.CACHE_AUTH_REVOCATION);
+        Long revokedAt = cache == null ? null : cache.get(userId, Long.class);
+        return revokedAt != null && issuedAt < revokedAt;
     }
 }

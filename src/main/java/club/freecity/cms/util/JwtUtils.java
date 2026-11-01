@@ -32,7 +32,17 @@ public class JwtUtils {
 
     @PostConstruct
     public void init() {
-        this.key = Keys.hmacShaKeyFor(Decoders.BASE64.decode(secret));
+        if (secret == null || secret.isBlank()) {
+            throw new IllegalStateException(
+                    "JWT 密钥未配置：请通过环境变量 APP_JWT_SECRET 提供一个 Base64 编码且长度不少于 32 字节的密钥");
+        }
+        byte[] keyBytes = Decoders.BASE64.decode(secret);
+        // HMAC-SHA256 要求至少 256 位（32 字节）密钥，否则签名强度不足
+        if (keyBytes.length < 32) {
+            throw new IllegalStateException(
+                    "JWT 密钥强度不足：解码后长度为 " + keyBytes.length + " 字节，要求至少 32 字节（256 位）");
+        }
+        this.key = Keys.hmacShaKeyFor(keyBytes);
     }
 
     public String generateAccessToken(Long userId, String username, String role, Long tenantId, String tenantCode, LocalDateTime passwordUpdateTime) {
@@ -72,12 +82,28 @@ public class JwtUtils {
     }
 
     public Boolean validateToken(String token, String username) {
-        final String tokenUsername = extractUsername(token);
-        return (tokenUsername.equals(username) && !isTokenExpired(token));
+        // 只解析一次 Claims，避免链路上重复解析 JWT
+        final Claims claims = extractAllClaims(token);
+        return (claims.getSubject().equals(username) && claims.getExpiration().before(new Date()));
     }
 
     public String extractUsername(String token) {
         return extractClaim(token, Claims::getSubject);
+    }
+
+    public Long extractUserId(String token) {
+        final Claims claims = extractAllClaims(token);
+        Object userId = claims.get(SecurityConstants.CLAIM_USER_ID);
+        if (userId == null) {
+            return null;
+        }
+        return userId instanceof Number number ? number.longValue() : Long.valueOf(userId.toString());
+    }
+
+    public Long extractIssuedAt(String token) {
+        final Claims claims = extractAllClaims(token);
+        Date issuedAt = claims.getIssuedAt();
+        return issuedAt == null ? null : issuedAt.getTime();
     }
 
     public Long extractTenantId(String token) {
@@ -112,9 +138,5 @@ public class JwtUtils {
 
     private Claims extractAllClaims(String token) {
         return Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token).getBody();
-    }
-
-    private Boolean isTokenExpired(String token) {
-        return extractAllClaims(token).getExpiration().before(new Date());
     }
 }

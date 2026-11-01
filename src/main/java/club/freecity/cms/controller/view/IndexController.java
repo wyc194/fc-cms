@@ -8,6 +8,8 @@ import club.freecity.cms.service.CategoryService;
 import club.freecity.cms.service.TagService;
 import club.freecity.cms.service.TenantService;
 import club.freecity.cms.dto.TenantDto;
+import club.freecity.cms.dto.WebInfo;
+import club.freecity.cms.util.MarkdownUtils;
 import club.freecity.cms.dto.CategoryDto;
 import club.freecity.cms.dto.TagDto;
 import lombok.RequiredArgsConstructor;
@@ -225,7 +227,19 @@ public class IndexController {
      * 添加侧边栏通用模型属性
      */
     private void addAsideModelAttributes(Model model) {
-        model.addAttribute("tenantConfig", tenantService.getCurrentTenantConfig());
+        TenantDto tenantConfig = tenantService.getCurrentTenantConfig();
+        // 前台展示时对租户可编辑的富文本字段做 HTML 白名单过滤，防止租户侧存储 XSS 打访客；
+        // 管理端 /config 编辑接口走原始数据，不受影响
+        WebInfo webInfo = tenantConfig.getWebInfo();
+        if (webInfo != null) {
+            if (webInfo.getAboutMe() != null) {
+                webInfo.setAboutMe(MarkdownUtils.sanitize(webInfo.getAboutMe()));
+            }
+            if (webInfo.getCopyright() != null) {
+                webInfo.setCopyright(MarkdownUtils.sanitize(webInfo.getCopyright()));
+            }
+        }
+        model.addAttribute("tenantConfig", tenantConfig);
         model.addAttribute("articleCount", articleService.countPublishedArticles());
         model.addAttribute("categoryCount", categoryService.countCategories());
         model.addAttribute("tagCount", tagService.countTags());

@@ -12,6 +12,7 @@ public enum AuditAction {
      */
     AUTH_LOGIN("用户登录"),
     AUTH_REFRESH("令牌刷新"),
+    AUTH_LOGOUT("用户登出"),
 
     /**
      * 用户管理
